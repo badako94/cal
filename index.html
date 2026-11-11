@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -830,17 +831,20 @@
   </main>
 
   <!-- ==================== MODAL 1: SELL ITEM (ACTUAL PRICE & DISCOUNT) ==================== -->
-  <div id="sellModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+  <div id="sellModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-2.5 sm:p-4">
+    <!-- Max height 92vh, custom scrollbar, completely scrollable on mobile -->
+    <div class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-200 flex flex-col max-h-[92vh]">
+      <!-- Sticky Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 flex-shrink-0">
         <div>
-          <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">실판매가 & 할인 반영</span>
-          <h3 class="text-base font-bold text-slate-900 mt-1">상품 판매 출고 및 마진 확정</h3>
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">실판매가 & 서비스 구성품 연동</span>
+          <h3 class="text-sm sm:text-base font-bold text-slate-900 mt-0.5">상품 판매 출고 및 마진 확정</h3>
         </div>
-        <button type="button" id="btnCloseSellModal" class="text-slate-400 hover:text-slate-600 text-lg font-bold px-2">✕</button>
+        <button type="button" id="btnCloseSellModal" class="text-slate-400 hover:text-slate-700 text-xl font-bold px-2.5 py-1 rounded-lg">✕</button>
       </div>
 
-      <form id="sellForm" class="space-y-4">
+      <!-- Scrollable Form Body -->
+      <form id="sellForm" class="space-y-3.5 overflow-y-auto custom-scrollbar flex-1 pt-3 pr-1">
         <input type="hidden" id="sellItemId">
 
         <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
@@ -925,25 +929,36 @@
           </div>
         </div>
 
-        <!-- Live Profit Summary inside Modal -->
-        <div class="p-3.5 rounded-xl bg-slate-900 text-white text-xs space-y-1.5">
+        <!-- Live Profit Summary inside Modal (Crystal Clear Deductions) -->
+        <div class="p-3.5 rounded-xl bg-slate-900 text-white text-xs space-y-1.5 shadow-sm">
           <div class="flex justify-between">
-            <span class="text-slate-400">총 실판매 결제금액:</span>
-            <strong id="sellPreviewTotalActual" class="text-white">0원</strong>
+            <span class="text-slate-400">고객 실결제 금액:</span>
+            <strong id="sellPreviewTotalActual" class="text-white font-bold">0원</strong>
           </div>
-          <div class="flex justify-between">
-            <span class="text-slate-400">기준가 대비 총 할인액:</span>
-            <strong id="sellPreviewTotalDiscount" class="text-rose-300">0원</strong>
+          <div class="flex justify-between text-slate-300">
+            <span class="text-slate-400">(-) 본체 매입원가:</span>
+            <span id="sellPreviewBaseCost" class="text-slate-300">0원</span>
           </div>
-          <div class="flex justify-between pt-1.5 border-t border-slate-700 text-sm">
+          <div class="flex justify-between text-rose-300">
+            <span>(-) 동봉 서비스 구성품 원가 차감:</span>
+            <strong id="sellPreviewAccCost">0원</strong>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span class="text-slate-400">(-) 배송비/수수료:</span>
+            <span id="sellPreviewFee" class="text-slate-300">0원</span>
+          </div>
+          <div class="flex justify-between pt-2 border-t border-slate-700 text-sm">
             <span class="font-bold text-emerald-300">최종 확정 순수익 (실마진율):</span>
-            <strong id="sellPreviewNetProfit" class="text-emerald-400">0원 (0.0%)</strong>
+            <strong id="sellPreviewNetProfit" class="text-emerald-400 text-base font-bold">0원 (0.0%)</strong>
           </div>
         </div>
 
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btnCancelSellModal" class="text-xs font-medium px-4 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100">취소</button>
-          <button type="submit" class="text-xs font-bold px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">판매 확정 처리</button>
+        <!-- Sticky Action Buttons Footer (Always visible & never cut off) -->
+        <div class="sticky bottom-0 bg-white/95 backdrop-blur-xs pt-3 pb-1 border-t border-slate-100 flex items-center justify-end gap-2 flex-shrink-0 z-10">
+          <button type="button" id="btnCancelSellModal" class="text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 transition">취소</button>
+          <button type="submit" id="btnSubmitSellConfirm" class="text-xs font-bold px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition flex items-center gap-1.5">
+            <span>✓</span><span>판매 확정 및 재고 차감</span>
+          </button>
         </div>
       </form>
     </div>
@@ -1330,6 +1345,12 @@
 
     
 
+    // Helper: Distinguish Main Electronic Devices from Accessories/Cables/Consumables
+    function isAcc(cat) {
+      if (!cat) return false;
+      return (cat === '주변기기/소모품' || cat === '소모품' || cat.includes('케이블') || cat.includes('소모품'));
+    }
+
     // ==================== 4 CORE SETTLEMENT MODES & MANUAL CONTROLLER ====================
     function fmtDate(d) {
       const y = d.getFullYear();
@@ -1394,11 +1415,29 @@
       const end = document.getElementById('globalEndDate').value;
       document.getElementById('dashPeriodLabel').textContent = `조회 기간: ${start} ~ ${end}`;
 
-      // Update Nav Badges
-      const totalStockUnits = appState.inventory.reduce((acc, item) => acc + Number(item.stockQty || 0), 0);
+      // Helper to distinguish Main Devices from Accessories/Cables
+      
+      // Update Nav Badges: Main Device Count ('대') + Accessories Count ('개')
+      let mainDeviceStock = 0;
+      let accStock = 0;
+      appState.inventory.forEach(i => {
+        const q = Number(i.stockQty) || 0;
+        if (isAcc(i.category)) {
+          accStock += q;
+        } else {
+          mainDeviceStock += q;
+        }
+      });
+
       const periodSales = appState.sales.filter(s => isWithinPeriod(s.date));
-      document.getElementById('navBadgeStock').textContent = `${totalStockUnits}대`;
-      document.getElementById('navBadgeSales').textContent = `${periodSales.length}건`;
+      const badgeStockElem = document.getElementById('navBadgeStock');
+      if (badgeStockElem) {
+        badgeStockElem.textContent = accStock > 0 ? `${mainDeviceStock}대 (+${accStock}개)` : `${mainDeviceStock}대`;
+      }
+      const badgeSalesElem = document.getElementById('navBadgeSales');
+      if (badgeSalesElem) {
+        badgeSalesElem.textContent = `${periodSales.length}건`;
+      }
 
       renderDashboard(periodSales);
       renderInventoryTable();
@@ -1412,24 +1451,33 @@
     function renderDashboard(periodSales) {
       // 1. Current Stock Metrics
       let stockCostTotal = 0;
-      let stockCount = 0;
+      let mainDeviceCount = 0;
+      let accCount = 0;
       let stockExpectedRev = 0;
 
       appState.inventory.forEach(item => {
         const qty = Number(item.stockQty) || 0;
         const unitTotalCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
-        stockCount += qty;
+        if (isAcc(item.category)) {
+          accCount += qty;
+        } else {
+          mainDeviceCount += qty;
+        }
         stockCostTotal += qty * unitTotalCost;
         stockExpectedRev += qty * (Number(item.targetPrice) || 0);
       });
 
       document.getElementById('kpiStockCostTotal').textContent = formatKRW(stockCostTotal);
-      document.getElementById('kpiStockCount').textContent = `${stockCount}대`;
+      const kpiStockCountElem = document.getElementById('kpiStockCount');
+      if (kpiStockCountElem) {
+        kpiStockCountElem.textContent = accCount > 0 ? `기기 ${mainDeviceCount}대 / 소모품 ${accCount}개` : `${mainDeviceCount}대`;
+      }
       document.getElementById('kpiStockExpectedRev').textContent = formatKRW(stockExpectedRev);
 
       // 2. Period Sales & Margin Metrics
       let actualSalesSum = 0;
-      let soldQtySum = 0;
+      let soldDeviceSum = 0;
+      let soldAccSum = 0;
       let discountSum = 0;
       let cogsSum = 0;
       let feesSum = 0;
@@ -1437,7 +1485,11 @@
       periodSales.forEach(s => {
         const q = Number(s.qty) || 1;
         actualSalesSum += (Number(s.unitActualPrice) || 0) * q;
-        soldQtySum += q;
+        if (isAcc(s.category)) {
+          soldAccSum += q;
+        } else {
+          soldDeviceSum += q;
+        }
         discountSum += (Number(s.unitDiscount) || 0) * q;
         cogsSum += (Number(s.unitCostTotal) || 0) * q;
         feesSum += Number(s.shippingFee) || 0;
@@ -1447,7 +1499,7 @@
       const marginRate = actualSalesSum > 0 ? ((netProfit / actualSalesSum) * 100).toFixed(1) : '0.0';
 
       document.getElementById('kpiPeriodActualSales').textContent = formatKRW(actualSalesSum);
-      document.getElementById('kpiPeriodSoldCount').textContent = `${soldQtySum}대`;
+      document.getElementById('kpiPeriodSoldCount').textContent = soldAccSum > 0 ? `기기 ${soldDeviceSum}대 / 소모품 ${soldAccSum}개` : `${soldDeviceSum}대`;
       document.getElementById('kpiPeriodDiscountTotal').textContent = formatKRW(discountSum);
       document.getElementById('kpiPeriodNetProfit').textContent = formatKRW(netProfit);
       document.getElementById('kpiPeriodMarginRate').textContent = `마진율 ${marginRate}%`;
@@ -1491,7 +1543,7 @@
                   <div class="text-[11px] text-slate-400">${escapeHtml(item.category)} · ${escapeHtml(item.condition)}</div>
                 </td>
                 <td class="py-2.5 px-2 text-center">
-                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${item.stockQty <= 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${item.stockQty}대</span>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${item.stockQty <= 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${item.stockQty}${isAcc(item.category) ? '개' : '대'}</span>
                 </td>
                 <td class="py-2.5 px-2 text-right text-slate-600">${formatKRW(totalUnitCost)}</td>
                 <td class="py-2.5 px-2 text-right font-semibold text-indigo-700">${formatKRW(item.targetPrice)}</td>
@@ -1515,7 +1567,7 @@
                     <h4 class="text-xs font-bold text-slate-900 mt-1">${escapeHtml(item.modelName)}</h4>
                   </div>
                   <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${item.stockQty <= 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'} whitespace-nowrap">
-                    ${item.stockQty}대 남음
+                    ${item.stockQty}${isAcc(item.category) ? '개' : '대'} 남음
                   </span>
                 </div>
                 <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-200">
@@ -1751,9 +1803,9 @@
             </td>
             <td class="py-3 px-2 text-center">
               <span class="px-2.5 py-1 rounded-full text-xs font-bold ${q === 0 ? 'bg-slate-200 text-slate-500' : q === 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
-                ${q}대
+                ${q}${isAcc(item.category) ? '개' : '대'}
               </span>
-              <div class="text-[10px] text-slate-400 mt-0.5">초기 ${item.initialQty}대</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">초기 ${item.initialQty}${isAcc(item.category) ? '개' : '대'}</div>
             </td>
             <td class="py-3 px-3 text-right">
               <div class="font-semibold text-slate-900">${formatKRW(unitTotalCost)}</div>
@@ -1802,9 +1854,9 @@
                 </div>
                 <div class="text-right flex-shrink-0">
                   <span class="px-2.5 py-1 rounded-full text-xs font-bold ${q === 0 ? 'bg-slate-200 text-slate-600' : q === 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
-                    재고 ${q}대
+                    재고 ${q}${isAcc(item.category) ? '개' : '대'}
                   </span>
-                  <div class="text-[10px] text-slate-400 mt-1">초기 ${item.initialQty}대</div>
+                  <div class="text-[10px] text-slate-400 mt-1">초기 ${item.initialQty}${isAcc(item.category) ? '개' : '대'}</div>
                 </div>
               </div>
 
@@ -2075,10 +2127,15 @@
       const container = document.getElementById('sellModalAccessoryList');
       if (!container) return;
 
-      // Find all inventory items marked as '주변기기/소모품' or containing cable/remote
+      // Find all inventory items that are accessories, cables, remotes, or consumables
       const accItems = appState.inventory.filter(i => {
-        if (i.id === activeSellItem?.id) return false;
-        return (i.category === '주변기기/소모품' || i.category === '모니터/주변기기');
+        if (!i || i.id === activeSellItem?.id) return false;
+        const c = (i.category || '').toLowerCase();
+        const n = (i.modelName || '').toLowerCase();
+        return (
+          c.includes('주변기기') || c.includes('소모품') || c.includes('케이블') ||
+          n.includes('hdmi') || n.includes('케이블') || n.includes('리모컨') || n.includes('전원') || n.includes('삼각대') || n.includes('가방')
+        );
       });
 
       if (accItems.length === 0) {
@@ -2171,8 +2228,18 @@
       const mRate = totalActual > 0 ? ((netProfit / totalActual) * 100).toFixed(1) : '0.0';
 
       document.getElementById('sellPreviewTotalActual').textContent = formatKRW(totalActual);
-      document.getElementById('sellPreviewTotalDiscount').textContent = formatKRW(totalDisc);
-      document.getElementById('sellPreviewNetProfit').textContent = `${formatKRW(netProfit)} (${mRate}%)`;
+      const baseCostElem = document.getElementById('sellPreviewBaseCost');
+      if (baseCostElem) baseCostElem.textContent = formatKRW(baseUnitCost * q);
+      const accCostElem = document.getElementById('sellPreviewAccCost');
+      if (accCostElem) accCostElem.textContent = bundleAccCostTotal > 0 ? `-${formatKRW(bundleAccCostTotal)}` : '0원';
+      const feeElem = document.getElementById('sellPreviewFee');
+      if (feeElem) feeElem.textContent = fee > 0 ? `-${formatKRW(fee)}` : '0원';
+      
+      const profitElem = document.getElementById('sellPreviewNetProfit');
+      if (profitElem) {
+        profitElem.textContent = `${netProfit >= 0 ? '+' : ''}${formatKRW(netProfit)} (${mRate}%)`;
+        profitElem.className = netProfit >= 0 ? 'text-emerald-400 text-base font-bold' : 'text-rose-400 text-base font-bold';
+      }
     }
 
     // ==================== EDIT MODAL LOGIC ====================
