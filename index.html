@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -46,6 +47,12 @@
       background-color: rgba(15, 23, 42, 0.55);
       backdrop-filter: blur(2px);
     }
+    /* Safe Area & Mobile Bottom Dock clearance */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .mobile-safe-bottom {
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -78,6 +85,25 @@
             <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             <span class="hidden sm:inline">엑셀</span><span>CSV</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Motivational Top Live Net Profit Hero Card (맨 위 직관적인 현재 순수익 배너) -->
+      <div class="rounded-xl p-3 sm:p-3.5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-md flex items-center justify-between gap-3 border border-indigo-500/20">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 font-bold text-base flex-shrink-0">
+            ₩
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] font-semibold text-indigo-200">조회기간 현재 순수익</span>
+              <span id="topProfitMarginBadge" class="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">마진 0.0%</span>
+            </div>
+            <div class="text-[10px] text-slate-400 truncate" id="topProfitPeriodSubtext">선택 기간 정산 확정 이익</div>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          <div id="topHeroNetProfit" class="text-xl sm:text-2xl font-black text-emerald-400 tracking-tight">0원</div>
         </div>
       </div>
 
@@ -125,6 +151,10 @@
           <span>💰</span> 판매 내역 (실판매가·할인)
           <span id="navBadgeSales" class="text-[11px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 font-semibold">0</span>
         </button>
+        <button data-tab="services" class="nav-tab text-slate-600 hover:bg-slate-200/70 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+          <span>🛠️</span> 출장수리 / 공임비 수익
+          <span id="navBadgeServices" class="text-[11px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700 font-semibold">0</span>
+        </button>
         <button data-tab="settlement" class="nav-tab text-slate-600 hover:bg-slate-200/70 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
           <span>📅</span> 월별·기간별 정산 리포트
         </button>
@@ -136,27 +166,54 @@
   </header>
 
   <!-- Main Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 pt-4 pb-28 sm:pb-8 space-y-5 sm:space-y-6 mobile-safe-bottom">
 
     <!-- ==================== TAB 1: DASHBOARD ==================== -->
     <section id="tab-dashboard" class="tab-panel space-y-6">
-      <!-- Period Notice Banner -->
-      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-wrap items-center justify-between gap-4">
-        <div>
+      <!-- Period Notice Banner (사업 현황 & 실시간 순수익 브리핑) -->
+      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-4 sm:p-5 text-white shadow-md space-y-3.5 border border-indigo-500/20">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/60 pb-2.5">
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/30 border border-indigo-400/40 rounded-full text-indigo-200">실시간 수익 브리핑</span>
-            <span id="dashPeriodLabel" class="text-xs text-slate-300 font-medium"></span>
+            <h2 class="text-lg sm:text-xl font-black tracking-tight text-white">사업 현황</h2>
+            <span id="dashPeriodLabel" class="px-2 py-0.5 text-[10px] font-bold bg-indigo-500/30 border border-indigo-400/40 rounded-full text-indigo-200">실시간 순수익</span>
           </div>
-          <h2 class="text-lg sm:text-xl font-bold mt-1">사업현황 한눈에 보기</h2>
-          <p class="text-xs text-slate-300 mt-0.5">상단 달력에서 정산 시작일과 종료일을 바꾸면 모든 수익·마진 지표가 즉시 재계산됩니다.</p>
+          <div class="flex items-center gap-2">
+            <button id="btnGoSettlementFromDash" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition">
+              정산 상세 →
+            </button>
+            <button id="btnGoInventoryFromDash" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white shadow-sm transition">
+              판매 처리
+            </button>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btnGoSettlementFromDash" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition">
-            정산 상세 보기 →
-          </button>
-          <button id="btnGoInventoryFromDash" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white shadow-sm transition">
-            재고 판매 처리하기
-          </button>
+
+        <!-- Realtime Profit Grid: 월 / 일 / 연 / 총 수익 (한눈에 깔끔하게) -->
+        <div>
+          <div class="text-[11px] font-bold text-indigo-300 mb-1.5 flex items-center gap-1">
+            <span>※</span><span>실시간 순수익 (물품판매 + 출장공임 통합)</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <!-- 월 수익 -->
+            <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/70 flex flex-col justify-between">
+              <span class="text-[11px] text-slate-400 font-semibold">월 수익 =</span>
+              <div id="dashRealtimeMonthProfit" class="text-base sm:text-lg font-black text-emerald-400 mt-0.5 tracking-tight">0원</div>
+            </div>
+            <!-- 일 수익 -->
+            <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/70 flex flex-col justify-between">
+              <span class="text-[11px] text-slate-400 font-semibold">일 수익 (오늘) =</span>
+              <div id="dashRealtimeDayProfit" class="text-base sm:text-lg font-black text-emerald-400 mt-0.5 tracking-tight">0원</div>
+            </div>
+            <!-- 연 수익 -->
+            <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/70 flex flex-col justify-between">
+              <span class="text-[11px] text-slate-400 font-semibold">연 수익 (올해) =</span>
+              <div id="dashRealtimeYearProfit" class="text-base sm:text-lg font-black text-emerald-400 mt-0.5 tracking-tight">0원</div>
+            </div>
+            <!-- 총 수익 -->
+            <div class="p-2.5 rounded-xl bg-indigo-900/60 border border-indigo-500/40 flex flex-col justify-between">
+              <span class="text-[11px] text-indigo-200 font-bold">총 수익 (누적) =</span>
+              <div id="dashRealtimeAllProfit" class="text-base sm:text-lg font-black text-indigo-300 mt-0.5 tracking-tight">0원</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -651,6 +708,126 @@
       </div>
     </section>
 
+    <!-- ==================== TAB: TECHNICAL SERVICES & LABOR INCOME (출장수리/공임비) ==================== -->
+    <section id="tab-services" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left: Quick Service Register Form -->
+        <div class="lg:col-span-1 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">100% 무자본 순수익</span>
+            <h2 class="text-base font-bold text-slate-900 mt-1">🛠️ 기술료 · 공임비 수익 등록</h2>
+            <p class="text-xs text-slate-500">PC 포맷, 출장 클리닝, 부품 조립대행, 빔 설치 등 작업 공임비를 등록합니다.</p>
+          </div>
+
+          <!-- Customizable Service Preset Buttons (직접 수정/추가/삭제) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-slate-700">⚡ 자주 하는 작업 원터치 채우기:</span>
+              <button type="button" id="btnToggleNewSvcPresetForm" class="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition flex items-center gap-0.5">
+                <span>+</span><span>프리셋 추가/수정</span>
+              </button>
+            </div>
+
+            <!-- Inline New Service Preset Form (Hidden by default) -->
+            <div id="newSvcPresetFormWrap" class="hidden p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl space-y-2 text-xs">
+              <div class="font-bold text-indigo-950 text-[11px]">새 작업 프리셋 등록 (저장해두고 언제든 원터치 사용)</div>
+              <div class="space-y-1.5">
+                <input type="text" id="newSvcPresetTitle" placeholder="작업명 (예: 노트북 액정교체, SSD마이그레이션 등)" class="w-full text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-white">
+                <div class="grid grid-cols-2 gap-1.5">
+                  <select id="newSvcPresetCat" class="text-xs border border-slate-300 rounded px-2 py-1.5 bg-white font-medium">
+                    <option value="포맷/소프트웨어">포맷/소프트웨어</option>
+                    <option value="하드웨어 클리닝">하드웨어 클리닝</option>
+                    <option value="조립/업그레이드">조립/업그레이드</option>
+                    <option value="빔프로젝터 설치/점검">빔프로젝터 설치/점검</option>
+                    <option value="기타 기술용역">기타 기술용역</option>
+                  </select>
+                  <input type="number" id="newSvcPresetFee" min="0" step="1000" placeholder="기본 공임비(원)" class="text-xs border border-slate-300 rounded px-2 py-1.5 bg-white font-bold">
+                </div>
+                <div class="flex justify-end gap-1.5 pt-1">
+                  <button type="button" id="btnCancelNewSvcPreset" class="text-xs px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-600">취소</button>
+                  <button type="button" id="btnSaveNewSvcPreset" class="text-xs font-bold px-3 py-1 rounded bg-indigo-600 text-white">저장</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Service Preset Buttons Grid -->
+            <div id="dynamicSvcPresetList" class="grid grid-cols-2 gap-1.5 text-xs"></div>
+          </div>
+
+          <form id="serviceIncomeForm" class="space-y-3 pt-2 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">작업 일자 *</label>
+              <input type="date" id="svcDate" required class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">작업 유형 / 카테고리 *</label>
+              <select id="svcCategory" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium">
+                <option value="포맷/소프트웨어">포맷 / 소프트웨어 설치</option>
+                <option value="하드웨어 클리닝">출장 정밀 클리닝 (써멀/먼지)</option>
+                <option value="조립/업그레이드">PC 부품 조립 / 업그레이드</option>
+                <option value="빔프로젝터 설치/점검">빔프로젝터 설치 / 점검</option>
+                <option value="기타 기술용역">기타 출장 점검 / 수리</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">작업 내용 / 고객명 *</label>
+              <input type="text" id="svcTitle" required placeholder="예: 해운대 오피스텔 PC 포맷 및 드라이버 세팅" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block font-bold text-indigo-700 mb-1">받은 기술료/공임비 *</label>
+                <input type="number" id="svcIncomeFee" min="0" step="1000" placeholder="0" required class="w-full border-2 border-indigo-400 rounded-lg px-2.5 py-2 bg-white font-bold text-indigo-900">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-600 mb-1">교통비/소모품 지출</label>
+                <input type="number" id="svcExpense" min="0" step="500" value="0" placeholder="0" class="w-full border border-slate-300 rounded-lg px-2.5 py-2 bg-white font-semibold text-slate-700">
+              </div>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">결제 방식 / 메모</label>
+              <input type="text" id="svcMemo" placeholder="예: 계좌이체 완료, 써멀구리스 소량 소모" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition">
+              공임비 수익 등록하기
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Services History List -->
+        <div class="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">기간 내 기술료 · 공임비 수입 내역</h3>
+              <p class="text-xs text-slate-500">선택하신 정산 기간 내 발생한 모든 출장/수리 순수익 내역입니다.</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-slate-500">공임비 총 순수익:</span>
+              <strong id="svcTotalProfitBadge" class="text-sm font-black text-emerald-600 ml-1">0원</strong>
+            </div>
+          </div>
+
+          <!-- Services List (Mobile Card + Desktop Table) -->
+          <div id="serviceMobileList" class="block sm:hidden space-y-2.5"></div>
+
+          <div class="hidden sm:block overflow-x-auto custom-scrollbar border border-slate-200 rounded-xl">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                  <th class="py-2.5 px-3 font-semibold">작업일 / 분류</th>
+                  <th class="py-2.5 px-3 font-semibold">작업 내용 / 메모</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">받은 공임비</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">부대비용</th>
+                  <th class="py-2.5 px-2 font-semibold text-right text-emerald-700">순수익</th>
+                  <th class="py-2.5 px-2 font-semibold text-center">관리</th>
+                </tr>
+              </thead>
+              <tbody id="serviceTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ==================== TAB 5: MONTHLY / CUSTOM PERIOD SETTLEMENT ==================== -->
     <section id="tab-settlement" class="tab-panel hidden space-y-6">
       <!-- Period Customizer Card -->
@@ -682,35 +859,49 @@
           </div>
         </div>
 
-        <!-- Detailed Settlement Summary Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-slate-100">
-          <!-- Box A: Sales Breakdown -->
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-            <div class="font-bold text-slate-800 text-sm mb-2">① 매출 및 할인 정산 (판매완료 기준)</div>
-            <div class="flex justify-between"><span class="text-slate-500">기준 판매가 합계 (정가):</span><strong id="settleTargetRev">0원</strong></div>
-            <div class="flex justify-between text-rose-600"><span>(-) 할인 판매 차감액 합계:</span><strong id="settleDiscountSum">0원</strong></div>
-            <div class="flex justify-between pt-2 border-t border-slate-200 text-sm font-bold text-slate-900">
-              <span>(=) 실판매 매출 총액:</span><span id="settleActualRev">0원</span>
+        <!-- Detailed Settlement Summary Grid (4 Boxes with Services Income) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-3 border-t border-slate-100">
+          <!-- Box A: Sales Revenue -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
+            <div class="font-bold text-slate-800 text-xs mb-1.5">① 물품 실매출</div>
+            <div class="flex justify-between text-slate-500"><span>정가 합계:</span><strong id="settleTargetRev" class="text-slate-700">0원</strong></div>
+            <div class="flex justify-between text-rose-600"><span>(-) 할인 차감:</span><strong id="settleDiscountSum">0원</strong></div>
+            <div class="flex justify-between pt-1.5 border-t border-slate-200 font-bold text-slate-900">
+              <span>실판매액:</span><span id="settleActualRev">0원</span>
             </div>
           </div>
 
-          <!-- Box B: Cost & Profit Breakdown -->
-          <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-200 space-y-2 text-xs">
-            <div class="font-bold text-indigo-950 text-sm mb-2">② 매출원가 및 순수익 정산</div>
-            <div class="flex justify-between"><span class="text-slate-600">판매된 물품 매입원가 (COGS):</span><strong id="settleCOGS">0원</strong></div>
-            <div class="flex justify-between"><span class="text-slate-600">판매 부대비용 (배송비/수수료):</span><strong id="settleSalesFees">0원</strong></div>
-            <div class="flex justify-between pt-2 border-t border-indigo-200 text-sm font-bold text-indigo-700">
-              <span>(=) 기간 확정 순수익 (실마진):</span><span id="settleNetProfit">0원 (0.0%)</span>
+          <!-- Box B: Labor / Service Income -->
+          <div class="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-1.5 text-xs">
+            <div class="font-bold text-emerald-950 text-xs mb-1.5">② 기술료 · 공임비 수익</div>
+            <div class="flex justify-between text-slate-600"><span>공임비 수입:</span><strong id="settleSvcRevenue" class="text-emerald-800">0원</strong></div>
+            <div class="flex justify-between text-slate-500"><span>(-) 출장·재료비:</span><strong id="settleSvcExpenses" class="text-slate-600">0원</strong></div>
+            <div class="flex justify-between pt-1.5 border-t border-emerald-200 font-bold text-emerald-800">
+              <span>공임 순이익:</span><span id="settleSvcNetProfit">+0원</span>
             </div>
           </div>
 
-          <!-- Box C: Cashflow Breakdown -->
-          <div class="p-4 rounded-xl bg-emerald-50/40 border border-emerald-200 space-y-2 text-xs">
-            <div class="font-bold text-emerald-950 text-sm mb-2">③ 현금 흐름 참고 (매입지출 vs 회수금)</div>
-            <div class="flex justify-between"><span class="text-slate-600">기간 내 신규 도매 매입 지출:</span><strong id="settleNewPurchaseOut">0원</strong></div>
-            <div class="flex justify-between"><span class="text-slate-600">기간 내 기존재고 등록분 (지출제외):</span><strong id="settleExistingRegVal">0원</strong></div>
-            <div class="flex justify-between pt-2 border-t border-emerald-200 text-sm font-bold text-emerald-800">
-              <span>(=) 기간 순현금흐름 (실회수-신규매입):</span><span id="settleNetCashflow">0원</span>
+          <!-- Box C: Comprehensive Net Profit -->
+          <div class="p-3.5 rounded-xl bg-indigo-50/50 border border-indigo-200 space-y-1.5 text-xs">
+            <div class="font-bold text-indigo-950 text-xs mb-1.5">③ 총 사업 순수익 (물품+공임)</div>
+            <div class="flex justify-between text-slate-600"><span>물품 매출원가:</span><strong id="settleCOGS">0원</strong></div>
+            <div class="flex justify-between text-slate-600"><span>배송비/수수료:</span><strong id="settleSalesFees">0원</strong></div>
+            <div class="pt-1.5 border-t border-indigo-200">
+              <div class="flex justify-between text-indigo-700 font-black text-sm">
+                <span>최종 순이익:</span>
+                <span id="settleNetProfit">0원</span>
+              </div>
+              <div class="text-right text-[10px] text-indigo-600 font-bold mt-0.5" id="settleMarginRateBadge">물품 마진율 0.0%</div>
+            </div>
+          </div>
+
+          <!-- Box D: Cashflow -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
+            <div class="font-bold text-slate-800 text-xs mb-1.5">④ 현금 흐름 참고</div>
+            <div class="flex justify-between text-slate-600"><span>도매 매입지출:</span><strong id="settleNewPurchaseOut">0원</strong></div>
+            <div class="flex justify-between text-slate-500"><span>기존재고 등록분:</span><strong id="settleExistingRegVal">0원</strong></div>
+            <div class="flex justify-between pt-1.5 border-t border-slate-200 font-bold text-slate-800">
+              <span>순현금흐름:</span><span id="settleNetCashflow">0원</span>
             </div>
           </div>
         </div>
@@ -1027,6 +1218,12 @@
 
     function getDefaultData() {
       return {
+        svcPresets: [
+          { id: 'sp-1', title: 'PC 윈도우 포맷 및 최적화', fee: 35000, category: '포맷/소프트웨어', label: '💻 PC 포맷/세팅' },
+          { id: 'sp-2', title: '출장 본체 내부 먼지청소·써멀 재도포', fee: 40000, category: '하드웨어 클리닝', label: '🧹 출장 정밀 클리닝' },
+          { id: 'sp-3', title: 'PC 부품 조립 대행 및 선정리', fee: 50000, category: '조립/업그레이드', label: '🔧 조립 대행' },
+          { id: 'sp-4', title: '빔프로젝터 현장 방문점검 및 천장설치', fee: 60000, category: '빔프로젝터 설치/점검', label: '📽️ 빔 설치/점검' }
+        ],
         extraPresets: [
           { id: 'ext-1', name: '정비·클리닝 (접점/먼지/스티커)', cost: 3000, checked: true },
           { id: 'ext-2', name: '빔 만능 리모컨', cost: 3000, checked: true },
@@ -1185,6 +1382,26 @@
             targetPrice: 460000
           }
         ],
+        services: [
+          {
+            id: 'svc-301',
+            date: '2026-11-09',
+            category: '포맷/소프트웨어',
+            title: '해운대 우동 출장 데스크탑 윈도우 포맷 및 복구설치',
+            fee: 35000,
+            expense: 0,
+            memo: '계좌이체 완료, 단골 고객'
+          },
+          {
+            id: 'svc-302',
+            date: '2026-11-10',
+            category: '하드웨어 클리닝',
+            title: '게이밍 PC 내부 고압먼지 청소 및 CPU/GPU 써멀구리스 재도포',
+            fee: 45000,
+            expense: 3000,
+            memo: '써멀구리스 소량 소모, 현금 수령'
+          }
+        ],
         sales: [
           {
             id: 'sale-201',
@@ -1264,8 +1481,10 @@
             return {
               inventory: Array.isArray(parsed.inventory) ? parsed.inventory : def.inventory,
               sales: Array.isArray(parsed.sales) ? parsed.sales : def.sales,
+              services: Array.isArray(parsed.services) ? parsed.services : def.services,
               suppliers: Array.isArray(parsed.suppliers) && parsed.suppliers.length > 0 ? parsed.suppliers : def.suppliers,
-              extraPresets: Array.isArray(parsed.extraPresets) && parsed.extraPresets.length > 0 ? parsed.extraPresets : def.extraPresets
+              extraPresets: Array.isArray(parsed.extraPresets) ? parsed.extraPresets : def.extraPresets,
+              svcPresets: Array.isArray(parsed.svcPresets) ? parsed.svcPresets : def.svcPresets
             };
           }
         }
@@ -1304,11 +1523,17 @@
     // ==================== DYNAMIC EXTRA COST & REFURBISH PRESETS ====================
     function renderExtraPresets() {
       if (!appState.extraPresets || !Array.isArray(appState.extraPresets)) {
-        appState.extraPresets = getDefaultData().extraPresets;
+        appState.extraPresets = [];
       }
 
       const container = document.getElementById('extraPresetsList');
       if (!container) return;
+
+      if (appState.extraPresets.length === 0) {
+        container.innerHTML = `<div class="col-span-full py-2.5 text-center text-[11px] text-slate-400 bg-slate-50 rounded-lg">등록된 정비/구성품 항목이 없습니다. '+ 항목추가'로 등록할 수 있습니다.</div>`;
+        calcExtraCostTotal();
+        return;
+      }
 
       container.innerHTML = appState.extraPresets.map(p => `
         <div class="flex items-center justify-between p-2 rounded-lg border border-slate-200 bg-slate-50/70 hover:border-indigo-300 transition gap-1.5">
@@ -1408,6 +1633,160 @@
       return dateStr >= start && dateStr <= end;
     }
 
+    // Helper: Calculate Realtime Profits for Month, Day, Year, and All Time (Goods + Services)
+    function calculateRealtimeProfits() {
+      const now = new Date();
+      const todayStr = fmtDate(now);
+      const curYear = now.getFullYear();
+      const curMonth = now.getMonth();
+      const monthStart = fmtDate(new Date(curYear, curMonth, 1));
+      const monthEnd = fmtDate(new Date(curYear, curMonth + 1, 0));
+      const yearStart = `${curYear}-01-01`;
+      const yearEnd = `${curYear}-12-31`;
+
+      const computeProfit = (startDate, endDate) => {
+        let pSum = 0;
+        // 1. Goods Sales Profit
+        (appState.sales || []).forEach(s => {
+          if (s.date >= startDate && s.date <= endDate) {
+            const q = Number(s.qty) || 1;
+            const rev = (Number(s.unitActualPrice) || 0) * q;
+            const cost = (Number(s.unitCostTotal) || 0) * q;
+            const fee = Number(s.shippingFee) || 0;
+            pSum += (rev - cost - fee);
+          }
+        });
+        // 2. Service/Labor Income Profit
+        (appState.services || []).forEach(sv => {
+          if (sv.date >= startDate && sv.date <= endDate) {
+            pSum += ((Number(sv.fee) || 0) - (Number(sv.expense) || 0));
+          }
+        });
+        return pSum;
+      };
+
+      const monthProfit = computeProfit(monthStart, monthEnd);
+      const dayProfit = computeProfit(todayStr, todayStr);
+      const yearProfit = computeProfit(yearStart, yearEnd);
+      const allProfit = computeProfit('2020-01-01', '2035-12-31');
+
+      const elMonth = document.getElementById('dashRealtimeMonthProfit');
+      if (elMonth) elMonth.textContent = `${monthProfit >= 0 ? '+' : ''}${formatKRW(monthProfit)}`;
+
+      const elDay = document.getElementById('dashRealtimeDayProfit');
+      if (elDay) elDay.textContent = `${dayProfit >= 0 ? '+' : ''}${formatKRW(dayProfit)}`;
+
+      const elYear = document.getElementById('dashRealtimeYearProfit');
+      if (elYear) elYear.textContent = `${yearProfit >= 0 ? '+' : ''}${formatKRW(yearProfit)}`;
+
+      const elAll = document.getElementById('dashRealtimeAllProfit');
+      if (elAll) elAll.textContent = `${allProfit >= 0 ? '+' : ''}${formatKRW(allProfit)}`;
+    }
+
+    // Dynamic Service Presets Rendering
+    function renderDynamicSvcPresets() {
+      const container = document.getElementById('dynamicSvcPresetList');
+      if (!container) return;
+
+      if (!Array.isArray(appState.svcPresets)) {
+        appState.svcPresets = [];
+      }
+
+      if (appState.svcPresets.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 py-4 px-3 text-center text-[11px] text-slate-400 bg-slate-50/80 rounded-xl border border-dashed border-slate-200">
+            등록된 작업 프리셋이 없습니다. 우측 <strong>[+ 프리셋 추가/수정]</strong> 버튼으로 자주 하는 공임 작업을 등록해 보세요!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = appState.svcPresets.map(p => `
+        <div class="relative group p-2 rounded-lg border border-slate-200 hover:border-indigo-400 bg-slate-50 transition flex flex-col justify-between">
+          <div class="cursor-pointer dynamic-svc-preset-card flex-1" data-title="${escapeHtml(p.title)}" data-fee="${p.fee}" data-cat="${escapeHtml(p.category)}">
+            <div class="font-bold text-slate-800 text-[11px] truncate">${escapeHtml(p.label || p.title)}</div>
+            <div class="text-[10px] text-indigo-600 font-bold mt-0.5">${formatKRW(p.fee)}</div>
+          </div>
+          <button type="button" data-del-sp-id="${p.id}" class="del-sp-btn absolute top-1 right-1 text-slate-300 hover:text-rose-600 text-[10px] p-0.5 transition" title="프리셋 삭제">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function renderServicesTable(periodServices) {
+      const tbody = document.getElementById('serviceTableBody');
+      const mobileList = document.getElementById('serviceMobileList');
+      const totalBadge = document.getElementById('svcTotalProfitBadge');
+
+      let svcProfitSum = 0;
+      let svcRevSum = 0;
+      periodServices.forEach(s => {
+        const p = (Number(s.fee) || 0) - (Number(s.expense) || 0);
+        svcProfitSum += p;
+        svcRevSum += (Number(s.fee) || 0);
+      });
+
+      if (totalBadge) totalBadge.textContent = `+${formatKRW(svcProfitSum)}`;
+
+      if (periodServices.length === 0) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">해당 기간 내 등록된 출장/공임비 내역이 없습니다.</td></tr>`;
+        if (mobileList) mobileList.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">해당 기간 내 등록된 출장/공임비 내역이 없습니다.</div>`;
+        return;
+      }
+
+      if (tbody) {
+        tbody.innerHTML = periodServices.map(s => {
+          const fee = Number(s.fee) || 0;
+          const exp = Number(s.expense) || 0;
+          const profit = fee - exp;
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-3">
+                <div class="font-semibold text-slate-800">${s.date}</div>
+                <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 text-[10px] font-bold border border-indigo-200">${escapeHtml(s.category)}</span>
+              </td>
+              <td class="py-2.5 px-3">
+                <div class="font-bold text-slate-900">${escapeHtml(s.title)}</div>
+                <div class="text-[11px] text-slate-500">${escapeHtml(s.memo || '-')}</div>
+              </td>
+              <td class="py-2.5 px-2 text-right font-bold text-indigo-700">${formatKRW(fee)}</td>
+              <td class="py-2.5 px-2 text-right text-slate-500">${formatKRW(exp)}</td>
+              <td class="py-2.5 px-2 text-right font-black text-emerald-600">+${formatKRW(profit)}</td>
+              <td class="py-2.5 px-2 text-center">
+                <button type="button" data-del-svc-id="${s.id}" class="del-svc-btn text-xs text-rose-600 hover:underline">삭제</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (mobileList) {
+        mobileList.innerHTML = periodServices.map(s => {
+          const fee = Number(s.fee) || 0;
+          const exp = Number(s.expense) || 0;
+          const profit = fee - exp;
+          return `
+            <div class="p-3 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-bold border border-indigo-200">${escapeHtml(s.category)}</span>
+                    <span class="text-[11px] text-slate-400">${s.date}</span>
+                  </div>
+                  <h4 class="text-xs font-bold text-slate-900 mt-1">${escapeHtml(s.title)}</h4>
+                  ${s.memo ? `<div class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(s.memo)}</div>` : ''}
+                </div>
+                <button type="button" data-del-svc-id="${s.id}" class="del-svc-btn text-[11px] text-rose-500 p-1">삭제</button>
+              </div>
+              <div class="flex items-center justify-between text-xs pt-1.5 border-t border-slate-100 bg-slate-50/70 -mx-3 -mb-3 p-2.5 rounded-b-xl">
+                <span class="text-slate-500">받은 공임: <strong>${formatKRW(fee)}</strong> ${exp > 0 ? `<span class="text-rose-500 text-[10px]">(-${formatKRW(exp)})</span>` : ''}</span>
+                <span class="font-black text-emerald-600 text-sm">+${formatKRW(profit)}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
     // ==================== RENDER FUNCTIONS ====================
     function renderAll() {
       const start = document.getElementById('globalStartDate').value;
@@ -1429,6 +1808,9 @@
       });
 
       const periodSales = appState.sales.filter(s => isWithinPeriod(s.date));
+      if (!Array.isArray(appState.services)) appState.services = [];
+      const periodServices = appState.services.filter(s => isWithinPeriod(s.date));
+
       const badgeStockElem = document.getElementById('navBadgeStock');
       if (badgeStockElem) {
         badgeStockElem.textContent = accStock > 0 ? `${mainDeviceStock}대 (+${accStock}개)` : `${mainDeviceStock}대`;
@@ -1437,13 +1819,20 @@
       if (badgeSalesElem) {
         badgeSalesElem.textContent = `${periodSales.length}건`;
       }
+      const badgeSvcElem = document.getElementById('navBadgeServices');
+      if (badgeSvcElem) {
+        badgeSvcElem.textContent = `${periodServices.length}건`;
+      }
 
-      renderDashboard(periodSales);
+      calculateRealtimeProfits();
+      renderDynamicSvcPresets();
+      renderDashboard(periodSales, periodServices);
       renderInventoryTable();
       renderSupplierOptionsAndTable();
       renderExtraPresets();
       renderSalesTable(periodSales);
-      renderSettlementReport(periodSales);
+      renderServicesTable(periodServices);
+      renderSettlementReport(periodSales, periodServices);
       updateReceiveSimulator();
     }
 
@@ -1953,7 +2342,7 @@
     }
 
     // ==================== SETTLEMENT REPORT ====================
-    function renderSettlementReport(periodSales) {
+    function renderSettlementReport(periodSales, periodServices = []) {
       let targetRev = 0, discountSum = 0, actualRev = 0, cogs = 0, fees = 0;
       periodSales.forEach(s => {
         const q = Number(s.qty) || 1;
@@ -1964,8 +2353,16 @@
         fees += Number(s.shippingFee) || 0;
       });
 
-      const netProfit = actualRev - cogs - fees;
-      const marginRate = actualRev > 0 ? ((netProfit / actualRev) * 100).toFixed(1) : '0.0';
+      let svcRevSum = 0, svcExpSum = 0;
+      periodServices.forEach(s => {
+        svcRevSum += Number(s.fee) || 0;
+        svcExpSum += Number(s.expense) || 0;
+      });
+      const svcNetProfit = svcRevSum - svcExpSum;
+
+      const goodsNetProfit = actualRev - cogs - fees;
+      const marginRate = actualRev > 0 ? ((goodsNetProfit / actualRev) * 100).toFixed(1) : '0.0';
+      const totalNetProfit = goodsNetProfit + svcNetProfit;
 
       let newPurchaseOut = 0;
       let existingRegVal = 0;
@@ -1982,7 +2379,44 @@
       document.getElementById('settleActualRev').textContent = formatKRW(actualRev);
       document.getElementById('settleCOGS').textContent = formatKRW(cogs);
       document.getElementById('settleSalesFees').textContent = formatKRW(fees);
-      document.getElementById('settleNetProfit').textContent = `${formatKRW(netProfit)} (${marginRate}%)`;
+
+      // Box B: Service Income Values
+      const svsRevElem = document.getElementById('settleSvcRevenue');
+      if (svsRevElem) svsRevElem.textContent = formatKRW(svcRevSum);
+      const svsExpElem = document.getElementById('settleSvcExpenses');
+      if (svsExpElem) svsExpElem.textContent = formatKRW(svcExpSum);
+      const svsProfitElem = document.getElementById('settleSvcNetProfit');
+      if (svsProfitElem) svsProfitElem.textContent = `+${formatKRW(svcNetProfit)}`;
+
+      // Box C: Total Net Profit (Goods + Services)
+      const totalProfitFormatted = `${totalNetProfit >= 0 ? '+' : ''}${formatKRW(totalNetProfit)}`;
+      const netProfitEl = document.getElementById('settleNetProfit');
+      if (netProfitEl) {
+        netProfitEl.textContent = totalProfitFormatted;
+        netProfitEl.className = totalNetProfit >= 0 ? 'text-sm font-black text-indigo-700 tracking-tight' : 'text-sm font-black text-rose-600 tracking-tight';
+      }
+      const marginBadgeEl = document.getElementById('settleMarginRateBadge');
+      if (marginBadgeEl) {
+        marginBadgeEl.textContent = svcNetProfit > 0 ? `물품마진 ${marginRate}% + 공임 ${formatKRW(svcNetProfit)}` : `물품 마진율 ${marginRate}%`;
+      }
+
+      // Top Hero Motivational Net Profit Banner Update (Includes Goods + Services!)
+      const topHeroEl = document.getElementById('topHeroNetProfit');
+      if (topHeroEl) {
+        topHeroEl.textContent = totalProfitFormatted;
+        topHeroEl.className = totalNetProfit >= 0 ? 'text-xl sm:text-2xl font-black text-emerald-400 tracking-tight' : 'text-xl sm:text-2xl font-black text-rose-400 tracking-tight';
+      }
+      const topBadgeEl = document.getElementById('topProfitMarginBadge');
+      if (topBadgeEl) {
+        topBadgeEl.textContent = svcNetProfit > 0 ? `물품+공임 통합수익` : `실마진 ${marginRate}%`;
+      }
+      const topSubtextEl = document.getElementById('topProfitPeriodSubtext');
+      if (topSubtextEl) {
+        const sVal = document.getElementById('globalStartDate')?.value || '';
+        const eVal = document.getElementById('globalEndDate')?.value || '';
+        topSubtextEl.textContent = `${sVal} ~ ${eVal} 기준 순수익`;
+      }
+
       document.getElementById('settleNewPurchaseOut').textContent = formatKRW(newPurchaseOut);
       document.getElementById('settleExistingRegVal').textContent = formatKRW(existingRegVal);
       document.getElementById('settleNetCashflow').textContent = (netCashflow >= 0 ? '+' : '') + formatKRW(netCashflow);
@@ -2264,6 +2698,128 @@
       const todayStr = fmtDate(new Date());
       const recDateInput = document.getElementById('recDate');
       if (recDateInput) recDateInput.value = todayStr;
+
+      // Dynamic Service Presets: Click to Fill
+      const dynPresetContainer = document.getElementById('dynamicSvcPresetList');
+      if (dynPresetContainer) {
+        dynPresetContainer.addEventListener('click', (e) => {
+          const card = e.target.closest('.dynamic-svc-preset-card');
+          if (card) {
+            const title = card.getAttribute('data-title');
+            const fee = card.getAttribute('data-fee');
+            const cat = card.getAttribute('data-cat');
+            document.getElementById('svcTitle').value = title;
+            document.getElementById('svcIncomeFee').value = fee;
+            document.getElementById('svcCategory').value = cat;
+            document.getElementById('svcExpense').value = 0;
+            showToast(`'${title}' 작업 내용이 자동 채워졌습니다.`);
+            return;
+          }
+
+          const delBtn = e.target.closest('.del-sp-btn');
+          if (delBtn) {
+            const id = delBtn.getAttribute('data-del-sp-id');
+            appState.svcPresets = (appState.svcPresets || []).filter(p => p.id !== id);
+            saveState();
+            renderDynamicSvcPresets();
+            showToast('프리셋 항목이 삭제되었습니다.');
+          }
+        });
+      }
+
+      // Toggle Add Service Preset Form
+      const btnToggleNewSvcPreset = document.getElementById('btnToggleNewSvcPresetForm');
+      const newSvcPresetWrap = document.getElementById('newSvcPresetFormWrap');
+      const btnCancelNewSvcPreset = document.getElementById('btnCancelNewSvcPreset');
+      const btnSaveNewSvcPreset = document.getElementById('btnSaveNewSvcPreset');
+
+      if (btnToggleNewSvcPreset && newSvcPresetWrap) {
+        btnToggleNewSvcPreset.addEventListener('click', () => {
+          newSvcPresetWrap.classList.toggle('hidden');
+          if (!newSvcPresetWrap.classList.contains('hidden')) {
+            document.getElementById('newSvcPresetTitle').focus();
+          }
+        });
+      }
+      if (btnCancelNewSvcPreset && newSvcPresetWrap) {
+        btnCancelNewSvcPreset.addEventListener('click', () => {
+          newSvcPresetWrap.classList.add('hidden');
+        });
+      }
+      if (btnSaveNewSvcPreset) {
+        btnSaveNewSvcPreset.addEventListener('click', () => {
+          const title = (document.getElementById('newSvcPresetTitle').value || '').trim();
+          const fee = Number(document.getElementById('newSvcPresetFee').value) || 0;
+          const cat = document.getElementById('newSvcPresetCat').value;
+
+          if (!title) {
+            showToast('작업명을 입력해주세요.', 'error');
+            return;
+          }
+          if (fee <= 0) {
+            showToast('공임비를 입력해주세요.', 'error');
+            return;
+          }
+
+          if (!Array.isArray(appState.svcPresets)) appState.svcPresets = [];
+          appState.svcPresets.push({
+            id: 'sp-' + Date.now(),
+            title: title,
+            label: title,
+            fee: fee,
+            category: cat
+          });
+          saveState();
+          document.getElementById('newSvcPresetTitle').value = '';
+          document.getElementById('newSvcPresetFee').value = '';
+          newSvcPresetWrap.classList.add('hidden');
+          renderDynamicSvcPresets();
+          showToast(`'${title}' (${formatKRW(fee)}) 프리셋이 저장되었습니다!`);
+        });
+      }
+
+      // Service Income Form Submit
+      const svcForm = document.getElementById('serviceIncomeForm');
+      if (svcForm) {
+        const svcDateInput = document.getElementById('svcDate');
+        if (svcDateInput) svcDateInput.value = fmtDate(new Date());
+
+        svcForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const newSvc = {
+            id: 'svc-' + Date.now(),
+            date: document.getElementById('svcDate').value || fmtDate(new Date()),
+            category: document.getElementById('svcCategory').value,
+            title: document.getElementById('svcTitle').value.trim(),
+            fee: Number(document.getElementById('svcIncomeFee').value) || 0,
+            expense: Number(document.getElementById('svcExpense').value) || 0,
+            memo: document.getElementById('svcMemo').value.trim()
+          };
+
+          if (!Array.isArray(appState.services)) appState.services = [];
+          appState.services.unshift(newSvc);
+          saveState();
+          renderAll();
+          svcForm.reset();
+          if (svcDateInput) svcDateInput.value = fmtDate(new Date());
+          document.getElementById('svcExpense').value = 0;
+          showToast('출장/공임비 수익이 장부에 등록되었습니다!');
+        });
+      }
+
+      // Delegate Delete Service Income
+      document.body.addEventListener('click', (e) => {
+        const delSvcBtn = e.target.closest('.del-svc-btn');
+        if (delSvcBtn) {
+          const sid = delSvcBtn.getAttribute('data-del-svc-id');
+          if (sid) {
+            appState.services = (appState.services || []).filter(s => s.id !== sid);
+            saveState();
+            renderAll();
+            showToast('공임비 내역이 삭제되었습니다.');
+          }
+        }
+      });
 
       // Start with Monthly Settlement
       setSettlementMode('month');
@@ -2849,8 +3405,8 @@
     });
   </script>
 
-  <!-- Mobile Bottom Floating Navigation Bar (Thumb Friendly) -->
-  <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1.5 flex items-center justify-around shadow-lg">
+  <!-- Mobile Bottom Floating Navigation Bar (Thumb Friendly & Safe Area Supported) -->
+  <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-1.5 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around shadow-lg">
     <button data-tab="dashboard" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-bold text-indigo-600">
       <span class="text-base">📊</span>
       <span>대시보드</span>
@@ -2859,15 +3415,19 @@
       <span class="text-base">📦</span>
       <span>재고목록</span>
     </button>
-    <button data-tab="receive" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-slate-500">
+    <button data-tab="receive" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold text-slate-500">
       <span class="text-base">📥</span>
       <span>물품등록</span>
     </button>
-    <button data-tab="sales" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-slate-500">
+    <button data-tab="sales" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold text-slate-500">
       <span class="text-base">💰</span>
       <span>판매내역</span>
     </button>
-    <button data-tab="settlement" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-slate-500">
+    <button data-tab="services" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold text-slate-500">
+      <span class="text-base">🛠️</span>
+      <span>수리/공임</span>
+    </button>
+    <button data-tab="settlement" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold text-slate-500">
       <span class="text-base">📅</span>
       <span>정산</span>
     </button>
