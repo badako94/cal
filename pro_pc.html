@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기어스톡 Pro - 빔프로젝터·PC·노트북 재고 및 수익 정산 시스템</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .tab-active {
+      background-color: #1e293b;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .modal-backdrop {
+      background-color: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(2px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+          GS
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold text-slate-900 tracking-tight">기어스톡 Pro</h1>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">IT 기기 셀러 ERP</span>
+          </div>
+          <p class="text-xs text-slate-500">빔프로젝터 · 데스크탑 PC · 노트북 매입/재고/할인판매/월별 정산</p>
+        </div>
+      </div>
+
+      <!-- Global Settlement Period Bar -->
+      <div class="flex flex-wrap items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+        <span class="text-xs font-semibold text-slate-600 flex items-center gap-1">
+          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          정산 기준 기간:
+        </span>
+        <input type="date" id="globalStartDate" class="text-xs bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <span class="text-xs text-slate-400">~</span>
+        <input type="date" id="globalEndDate" class="text-xs bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <select id="quickPeriodSelect" class="text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 font-medium rounded-lg px-2 py-1 focus:outline-none">
+          <option value="this_month">이번 달 (1일~말일)</option>
+          <option value="last_month">지난 달 전체</option>
+          <option value="cycle_25">25일 정산주기 (전월25일~당월24일)</option>
+          <option value="cycle_15">15일 정산주기 (전월15일~당월14일)</option>
+          <option value="last_30">최근 30일</option>
+          <option value="this_year">올해 전체</option>
+          <option value="all_time">전체 기간</option>
+          <option value="custom">직접 날짜 지정</option>
+        </select>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center gap-2">
+        <button id="btnOpenQuickReceive" class="text-xs font-semibold px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          물품 등록/입고
+        </button>
+        <button id="btnExportCSV" class="text-xs font-medium px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          엑셀(CSV) 다운로드
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100 bg-slate-50/60">
+      <nav class="flex items-center gap-1.5 py-2 overflow-x-auto no-scrollbar" id="mainNav">
+        <button data-tab="dashboard" class="nav-tab tab-active text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+          <span>📊</span> 종합 대시보드
+        </button>
+        <button data-tab="inventory" class="nav-tab text-slate-600 hover:bg-slate-200/70 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+          <span>📦</span> 재고 관리 & 판매처리
+          <span id="navBadgeStock" class="text-[11px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700 font-semibold">0</span>
+        </button>
+        <button data-tab="receive" class="nav-tab text-slate-600 hover:bg-slate-200/70 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+          <span>📥</span> 매입 / 기존재고 등록
+        </button>
+        <button data-tab="sales" class="nav-tab text-slate-600 hover:bg-slate-200/70 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+          <span>💰</span> 판매 내역 (실판매가·할인)
+          <span id="navBadgeSales" class="text-[11px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 font-semibold">0</span>
+        </button>
+        <button data-tab="settlement" class="nav-tab text-slate-600 hover:bg-slate-200/70 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+          <span>📅</span> 월별·기간별 정산 리포트
+        </button>
+        <button data-tab="suppliers" class="nav-tab text-slate-600 hover:bg-slate-200/70 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition whitespace-nowrap flex items-center gap-1.5">
+          <span>🏢</span> 도매처 / 데이터 관리
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- ==================== TAB 1: DASHBOARD ==================== -->
+    <section id="tab-dashboard" class="tab-panel space-y-6">
+      <!-- Period Notice Banner -->
+      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/30 border border-indigo-400/40 rounded-full text-indigo-200">실시간 수익 브리핑</span>
+            <span id="dashPeriodLabel" class="text-xs text-slate-300 font-medium"></span>
+          </div>
+          <h2 class="text-lg sm:text-xl font-bold mt-1">빔프로젝터 · 컴퓨터 · 노트북 부업 현황 한눈에 보기</h2>
+          <p class="text-xs text-slate-300 mt-0.5">상단 달력에서 정산 시작일과 종료일을 바꾸면 모든 수익·마진 지표가 즉시 재계산됩니다.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnGoSettlementFromDash" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition">
+            정산 상세 보기 →
+          </button>
+          <button id="btnGoInventoryFromDash" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white shadow-sm transition">
+            재고 판매 처리하기
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1: Current Stock Value -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">현재 보유 재고 (매입원가 기준)</span>
+            <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">📦</span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="kpiStockCostTotal" class="text-xl sm:text-2xl font-bold text-slate-900">0원</span>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span>보유 수량: <strong id="kpiStockCount" class="text-slate-800">0대</strong></span>
+            <span>예상 매출: <strong id="kpiStockExpectedRev" class="text-indigo-600">0원</strong></span>
+          </div>
+        </div>
+
+        <!-- Card 2: Period Revenue (Actual Selling Price) -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">기간 내 실매출 합계 (실판매가)</span>
+            <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">💵</span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="kpiPeriodActualSales" class="text-xl sm:text-2xl font-bold text-slate-900">0원</span>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span>판매 건수: <strong id="kpiPeriodSoldCount" class="text-slate-800">0대</strong></span>
+            <span>할인 적용액: <strong id="kpiPeriodDiscountTotal" class="text-rose-600">0원</strong></span>
+          </div>
+        </div>
+
+        <!-- Card 3: Net Profit & Margin -->
+        <div class="bg-white rounded-2xl p-4 border border-indigo-200 bg-gradient-to-br from-white to-indigo-50/30 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-indigo-700">기간 내 순수익 & 실마진율</span>
+            <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">📈</span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="kpiPeriodNetProfit" class="text-xl sm:text-2xl font-bold text-indigo-700">0원</span>
+            <span id="kpiPeriodMarginRate" class="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">0.0%</span>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span>매출원가: <strong id="kpiPeriodCOGS" class="text-slate-700">0원</strong></span>
+            <span>판매부대비용: <strong id="kpiPeriodFees" class="text-slate-700">0원</strong></span>
+          </div>
+        </div>
+
+        <!-- Card 4: Period Purchases (Cash Outflow) -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">기간 내 도매 매입액 (신규입고)</span>
+            <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">🚚</span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="kpiPeriodPurchaseSpend" class="text-xl sm:text-2xl font-bold text-slate-900">0원</span>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span>신규 매입: <strong id="kpiPeriodPurchaseQty" class="text-slate-800">0대</strong></span>
+            <span>현금수지: <strong id="kpiPeriodCashflow" class="text-slate-800">0원</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">품목 카테고리별 매출 · 매입원가 · 순수익 비교</h3>
+              <p class="text-xs text-slate-500">선택한 정산 기간 내 빔프로젝터 / 데스크탑 PC / 노트북 / 주변기기 실적</p>
+            </div>
+          </div>
+          <div class="relative h-64">
+            <canvas id="chartCategoryPerformance"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="mb-4">
+            <h3 class="text-sm font-bold text-slate-900">현재 보유 재고 자산 비중</h3>
+            <p class="text-xs text-slate-500">카테고리별 묶여있는 재고 매입원가 비율</p>
+          </div>
+          <div class="relative h-64">
+            <canvas id="chartStockComposition"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Quick Overview Tables -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Available Stock Quick List -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">즉시 판매 가능 재고 현황</h3>
+              <p class="text-xs text-slate-500">우측 '판매처리' 버튼으로 할인/실판매가를 바로 입력할 수 있습니다</p>
+            </div>
+            <button id="btnDashViewAllStock" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">전체 보기 →</button>
+          </div>
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 bg-slate-50">
+                  <th class="py-2.5 px-3 font-semibold">품목/모델명</th>
+                  <th class="py-2.5 px-2 font-semibold text-center">잔여수량</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">매입단가</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">기준판매가</th>
+                  <th class="py-2.5 px-2 font-semibold text-center">빠른 액션</th>
+                </tr>
+              </thead>
+              <tbody id="dashStockTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Sales Quick List -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">최근 판매 완료 및 마진 내역</h3>
+              <p class="text-xs text-slate-500">기준 판매가 대비 할인액 및 실제 순수익 자동 반영</p>
+            </div>
+            <button id="btnDashViewAllSales" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">전체 보기 →</button>
+          </div>
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 bg-slate-50">
+                  <th class="py-2.5 px-3 font-semibold">판매일/모델명</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">기준가 → 실판매가</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">순수익(마진율)</th>
+                </tr>
+              </thead>
+              <tbody id="dashSalesTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: INVENTORY MANAGEMENT ==================== -->
+    <section id="tab-inventory" class="tab-panel hidden space-y-5">
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">보유 재고 통합 관리</h2>
+            <p class="text-xs text-slate-500">도매처 매입 물품과 기존 보유 재고의 매입가·기준판매가·예상마진을 관리하고 즉시 판매 처리를 진행합니다.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnGoReceiveFromInv" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
+              + 신규 매입 / 기존 재고 등록
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 border-t border-slate-100">
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">검색 (모델명, 브랜드, 관리번호, 도매처, 메모)</label>
+            <input type="text" id="invSearchInput" placeholder="예: 앱손 EB-X51, LG 그램, 라이젠 반본체..." class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">품목 카테고리</label>
+            <select id="invCategoryFilter" class="w-full text-xs border border-slate-300 rounded-lg px-2.5 py-2 bg-white">
+              <option value="ALL">전체 카테고리</option>
+              <option value="빔프로젝터">빔프로젝터</option>
+              <option value="노트북">노트북</option>
+              <option value="데스크탑 PC">데스크탑 PC</option>
+              <option value="모니터/주변기기">모니터/주변기기</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">등록 유형 (매입/기존재고)</label>
+            <select id="invSourceFilter" class="w-full text-xs border border-slate-300 rounded-lg px-2.5 py-2 bg-white">
+              <option value="ALL">전체 유형</option>
+              <option value="WHOLESALE">도매처 신규 매입</option>
+              <option value="EXISTING">기존 보유 재고 등록</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">재고 상태 필터</label>
+            <select id="invStatusFilter" class="w-full text-xs border border-slate-300 rounded-lg px-2.5 py-2 bg-white">
+              <option value="ALL">전체 보기 (품절 포함)</option>
+              <option value="IN_STOCK">재고 있음 (판매가능)</option>
+              <option value="LOW_STOCK">재고 부족 (1대 남음)</option>
+              <option value="SOLD_OUT">판매 완료 (품절)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="overflow-x-auto custom-scrollbar border border-slate-200 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th class="py-3 px-3 font-semibold">관리코드 / 입고일</th>
+                <th class="py-3 px-3 font-semibold">구분 / 도매처</th>
+                <th class="py-3 px-3 font-semibold">카테고리 / 모델명 / 사양</th>
+                <th class="py-3 px-2 font-semibold text-center">상태등급</th>
+                <th class="py-3 px-2 font-semibold text-center">잔여 / 초기</th>
+                <th class="py-3 px-3 font-semibold text-right">단위 매입가<br><span class="text-[10px] font-normal text-slate-400">(부대비 포함 원가)</span></th>
+                <th class="py-3 px-3 font-semibold text-right">기준 판매가</th>
+                <th class="py-3 px-3 font-semibold text-right">예상 마진<br><span class="text-[10px] font-normal text-slate-400">(1대 기준)</span></th>
+                <th class="py-3 px-3 font-semibold text-center">관리 / 판매처리</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: RECEIVE / REGISTER INVENTORY ==================== -->
+    <section id="tab-receive" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left 2 Columns: Registration Form -->
+        <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">재고 물품 등록 (도매처 매입 & 기존 재고)</h2>
+              <p class="text-xs text-slate-500">신규 도매처 매입 물품이든 기존에 가지고 있던 재고든 매입가와 판매가를 설정하여 등록합니다.</p>
+            </div>
+            <!-- Mode Switcher -->
+            <div class="inline-flex rounded-xl bg-slate-100 p-1">
+              <button type="button" id="modeBtnWholesale" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-sm transition">
+                🚚 1. 도매처 신규 매입 입고
+              </button>
+              <button type="button" id="modeBtnExisting" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+                🏠 2. 기존 보유 재고 등록
+              </button>
+            </div>
+          </div>
+
+          <form id="receiveForm" class="space-y-4">
+            <input type="hidden" id="recSourceType" value="WHOLESALE">
+
+            <!-- Mode Info Callout -->
+            <div id="recModeNotice" class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-900 flex items-center justify-between">
+              <span><strong>[도매처 신규 매입 입고]</strong> 도매 거래처에서 매입한 내역을 기록하며, 해당 입고일 기준 기간 정산 시 매입 지출액에 반영됩니다.</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">입고/등록 일자 *</label>
+                <input type="date" id="recDate" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div id="supplierFieldWrap">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">도매처 (매입 거래처) *</label>
+                <select id="recSupplier" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">품목 카테고리 *</label>
+                <select id="recCategory" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="빔프로젝터">빔프로젝터</option>
+                  <option value="노트북">노트북</option>
+                  <option value="데스크탑 PC">데스크탑 PC</option>
+                  <option value="모니터/주변기기">모니터/주변기기</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">상품 / 모델명 *</label>
+                <input type="text" id="recModelName" required placeholder="예: 엡손 EB-FH52 풀HD 빔프로젝터 / LG 그램 16인치 i5" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">상품 상태 등급 *</label>
+                <select id="recCondition" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
+                  <option value="중고 S급">중고 S급 (민트급)</option>
+                  <option value="중고 A급">중고 A급 (양호)</option>
+                  <option value="리퍼/전시">리퍼 / 전시상품</option>
+                  <option value="신품(미개봉)">신품 (미개봉)</option>
+                  <option value="중고 B급">중고 B급 (생활감)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">세부 스펙 / 구성품 메모</label>
+                <input type="text" id="recSpecs" placeholder="예: 램프 120시간, 리모컨/가방 포함 OR i5-1240P / 16GB / SSD 512GB" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">시리얼 / 자체 관리코드 (비워두면 자동생성)</label>
+                <input type="text" id="recSku" placeholder="예: PRJ-2026-019" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+
+            <!-- Pricing Section -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold text-slate-800">💲 매입가 및 기준 판매가 설정 (필수)</h3>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] text-slate-500">목표 마진율로 판매가 자동계산:</span>
+                  <button type="button" data-margin-Jump="15" class="margin-preset-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-indigo-50 text-slate-700">+15%</button>
+                  <button type="button" data-margin-Jump="25" class="margin-preset-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-indigo-50 text-slate-700">+25%</button>
+                  <button type="button" data-margin-Jump="35" class="margin-preset-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-indigo-50 text-slate-700">+35%</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">입고 수량 (대) *</label>
+                  <input type="number" id="recQty" min="1" value="1" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-semibold">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 매입가 (원) *</label>
+                  <input type="number" id="recUnitCost" min="0" step="1000" placeholder="예: 320000" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-semibold text-slate-900">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 수리/부대원가 (원)</label>
+                  <input type="number" id="recExtraCost" min="0" step="1000" value="0" placeholder="램프교체, SSD추가 등" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-indigo-700 mb-1">1대당 기준 판매가 (원) *</label>
+                  <input type="number" id="recTargetPrice" min="0" step="1000" placeholder="예: 450000" required class="w-full text-xs border-2 border-indigo-400 rounded-lg px-3 py-2 bg-white font-bold text-indigo-900">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+              <button type="reset" id="btnResetReceiveForm" class="text-xs font-medium px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 transition">
+                입력 초기화
+              </button>
+              <button type="submit" class="text-xs font-bold px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
+                재고 장부에 등록하기
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right 1 Column: Live Margin Preview & Quick Presets -->
+        <div class="space-y-4">
+          <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold flex items-center gap-2">
+              <span>🧮</span> 실시간 예상 수익 시뮬레이터
+            </h3>
+            <p class="text-xs text-slate-300">현재 입력 중인 물품의 1대당 원가 및 전체 수량 판매 시 예상되는 기준 마진입니다.</p>
+            <div class="space-y-2.5 text-xs border-t border-slate-700/80 pt-3">
+              <div class="flex justify-between">
+                <span class="text-slate-400">1대당 총 매입원가 (매입+부대비)</span>
+                <strong id="simUnitTotalCost" class="text-white">0원</strong>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">1대당 기준 판매가</span>
+                <strong id="simUnitTargetPrice" class="text-indigo-300">0원</strong>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-slate-800">
+                <span class="text-slate-300 font-semibold">1대 판매 시 예상 마진</span>
+                <strong id="simUnitMargin" class="text-emerald-400 text-sm">0원 (0.0%)</strong>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">총 매입 투자금 (<span id="simQtyLabel">1</span>대)</span>
+                <strong id="simTotalInvestment" class="text-amber-300">0원</strong>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">전량 판매 시 예상 순수익</span>
+                <strong id="simTotalProfit" class="text-emerald-400">0원</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Fill Sample Product Templates -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+            <h3 class="text-xs font-bold text-slate-800">⚡ 자주 취급하는 품목 빠른 자동입력</h3>
+            <p class="text-[11px] text-slate-500">클릭하면 입력 폼에 대표 스펙과 시세 예시가 자동으로 채워집니다.</p>
+            <div class="space-y-2">
+              <button type="button" data-Preset="projector" class="preset-fill-btn w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex items-center justify-between text-xs">
+                <div>
+                  <div class="font-semibold text-slate-800">📽️ 엡손 EB-FH52 무선 풀HD 빔프로젝터</div>
+                  <div class="text-[11px] text-slate-500">매입 380,000원 / 기준판매가 520,000원</div>
+                </div>
+                <span class="text-indigo-600 font-bold">채우기</span>
+              </button>
+              <button type="button" data-Preset="laptop" class="preset-fill-btn w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex items-center justify-between text-xs">
+                <div>
+                  <div class="font-semibold text-slate-800">💻 LG 그램 15인치 i5-12세대 16G/512G</div>
+                  <div class="text-[11px] text-slate-500">매입 580,000원 / 기준판매가 760,000원</div>
+                </div>
+                <span class="text-indigo-600 font-bold">채우기</span>
+              </button>
+              <button type="button" data-Preset="desktop" class="preset-fill-btn w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex items-center justify-between text-xs">
+                <div>
+                  <div class="font-semibold text-slate-800">🖥️ 게이밍 PC (라이젠 5600 + RTX 3060)</div>
+                  <div class="text-[11px] text-slate-500">매입 490,000원 / 기준판매가 650,000원</div>
+                </div>
+                <span class="text-indigo-600 font-bold">채우기</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: SALES & DISCOUNT HISTORY ==================== -->
+    <section id="tab-sales" class="tab-panel hidden space-y-5">
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">판매 완료 내역 (실판매가 · 할인 판매 · 실마진 분석)</h2>
+            <p class="text-xs text-slate-500">기준 판매가에서 네고/할인된 금액과 배송비·수수료를 모두 반영한 실제 수익 내역입니다.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="salesChannelFilter" class="text-xs border border-slate-300 rounded-lg px-2.5 py-2 bg-white">
+              <option value="ALL">전체 판매채널</option>
+              <option value="당근마켓">당근마켓</option>
+              <option value="번개장터">번개장터</option>
+              <option value="중고나라">중고나라</option>
+              <option value="스마트스토어">네이버 스마트스토어</option>
+              <option value="직거래/지인">직거래 / 매장</option>
+            </select>
+            <select id="salesDiscountFilter" class="text-xs border border-slate-300 rounded-lg px-2.5 py-2 bg-white">
+              <option value="ALL">할인 여부 전체</option>
+              <option value="DISCOUNTED">할인(네고) 판매 건만</option>
+              <option value="REGULAR">정가(기준가) 이상 판매 건만</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar border border-slate-200 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th class="py-3 px-3 font-semibold">판매일자 / 채널</th>
+                <th class="py-3 px-3 font-semibold">품목 / 모델명</th>
+                <th class="py-3 px-2 font-semibold text-center">수량</th>
+                <th class="py-3 px-3 font-semibold text-right">총 매입원가</th>
+                <th class="py-3 px-3 font-semibold text-right">기준 판매가</th>
+                <th class="py-3 px-3 font-semibold text-right">할인액 (할인율)</th>
+                <th class="py-3 px-3 font-semibold text-right text-indigo-700">실판매가 총액</th>
+                <th class="py-3 px-2 font-semibold text-right">부대비용</th>
+                <th class="py-3 px-3 font-semibold text-right text-emerald-700">실제 순수익 (마진율)</th>
+                <th class="py-3 px-2 font-semibold text-center">관리</th>
+              </tr>
+            </thead>
+            <tbody id="salesTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: MONTHLY / CUSTOM PERIOD SETTLEMENT ==================== -->
+    <section id="tab-settlement" class="tab-panel hidden space-y-6">
+      <!-- Period Customizer Card -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">맞춤형 정산 엔진</span>
+            <h2 class="text-base font-bold text-slate-900 mt-1">매월 정산 및 사용자 지정 기간 손익 계산서</h2>
+            <p class="text-xs text-slate-500">정산 기준일(예: 매월 1일~말일, 25일~익월 24일, 특정 주간 등)을 자유롭게 지정하여 정산할 수 있습니다.</p>
+          </div>
+          <!-- Quick Month / Cycle Buttons -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" data-settle-range="2026-11" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100">2026년 11월 (1일~말일)</button>
+            <button type="button" data-settle-range="2026-10" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100">2026년 10월 (1일~말일)</button>
+            <button type="button" data-settle-range="cycle25_nov" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100">10/25 ~ 11/24 (25일 정산주기)</button>
+            <button type="button" data-settle-range="all" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100">전체 누적 정산</button>
+          </div>
+        </div>
+
+        <!-- Detailed Settlement Summary Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-slate-100">
+          <!-- Box A: Sales Breakdown -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+            <div class="font-bold text-slate-800 text-sm mb-2">① 매출 및 할인 정산 (판매완료 기준)</div>
+            <div class="flex justify-between"><span class="text-slate-500">기준 판매가 합계 (정가):</span><strong id="settleTargetRev">0원</strong></div>
+            <div class="flex justify-between text-rose-600"><span>(-) 할인 판매 차감액 합계:</span><strong id="settleDiscountSum">0원</strong></div>
+            <div class="flex justify-between pt-2 border-t border-slate-200 text-sm font-bold text-slate-900">
+              <span>(=) 실판매 매출 총액:</span><span id="settleActualRev">0원</span>
+            </div>
+          </div>
+
+          <!-- Box B: Cost & Profit Breakdown -->
+          <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-200 space-y-2 text-xs">
+            <div class="font-bold text-indigo-950 text-sm mb-2">② 매출원가 및 순수익 정산</div>
+            <div class="flex justify-between"><span class="text-slate-600">판매된 물품 매입원가 (COGS):</span><strong id="settleCOGS">0원</strong></div>
+            <div class="flex justify-between"><span class="text-slate-600">판매 부대비용 (배송비/수수료):</span><strong id="settleSalesFees">0원</strong></div>
+            <div class="flex justify-between pt-2 border-t border-indigo-200 text-sm font-bold text-indigo-700">
+              <span>(=) 기간 확정 순수익 (실마진):</span><span id="settleNetProfit">0원 (0.0%)</span>
+            </div>
+          </div>
+
+          <!-- Box C: Cashflow Breakdown -->
+          <div class="p-4 rounded-xl bg-emerald-50/40 border border-emerald-200 space-y-2 text-xs">
+            <div class="font-bold text-emerald-950 text-sm mb-2">③ 현금 흐름 참고 (매입지출 vs 회수금)</div>
+            <div class="flex justify-between"><span class="text-slate-600">기간 내 신규 도매 매입 지출:</span><strong id="settleNewPurchaseOut">0원</strong></div>
+            <div class="flex justify-between"><span class="text-slate-600">기간 내 기존재고 등록분 (지출제외):</span><strong id="settleExistingRegVal">0원</strong></div>
+            <div class="flex justify-between pt-2 border-t border-emerald-200 text-sm font-bold text-emerald-800">
+              <span>(=) 기간 순현금흐름 (실회수-신규매입):</span><span id="settleNetCashflow">0원</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category & Supplier Breakdown in Settlement Period -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">품목 카테고리별 정산 요약표</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                  <th class="py-2.5 px-3 font-semibold">카테고리</th>
+                  <th class="py-2.5 px-2 font-semibold text-center">판매수량</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">실매출액</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">할인액</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">순수익 (마진율)</th>
+                </tr>
+              </thead>
+              <tbody id="settleCategoryTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">판매 채널별 실적 & 수수료 요약표</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                  <th class="py-2.5 px-3 font-semibold">판매 채널</th>
+                  <th class="py-2.5 px-2 font-semibold text-center">거래건수</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">실판매 총액</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">부대비용</th>
+                  <th class="py-2.5 px-2 font-semibold text-right">순수익</th>
+                </tr>
+              </thead>
+              <tbody id="settleChannelTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 6: SUPPLIERS & DATA BACKUP ==================== -->
+    <section id="tab-suppliers" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Wholesale Suppliers Management -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">🏢 도매 거래처 (매입처) 관리</h2>
+            <p class="text-xs text-slate-500">자주 거래하는 빔프로젝터·컴퓨터·노트북 도매처를 등록해두면 입고 시 편리하게 선택할 수 있습니다.</p>
+          </div>
+          <form id="supplierForm" class="flex flex-wrap gap-2">
+            <input type="text" id="supName" required placeholder="도매처 상호명 (예: 용산 제이컴퍼니)" class="flex-1 min-w-[140px] text-xs border border-slate-300 rounded-lg px-3 py-2">
+            <input type="text" id="supSpecialty" placeholder="주력품목 (예: 중고노트북/그램)" class="flex-1 min-w-[120px] text-xs border border-slate-300 rounded-lg px-3 py-2">
+            <input type="text" id="supContact" placeholder="연락처/메모" class="flex-1 min-w-[120px] text-xs border border-slate-300 rounded-lg px-3 py-2">
+            <button type="submit" class="text-xs font-bold px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white">추가</button>
+          </form>
+          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                  <th class="py-2.5 px-3 font-semibold">거래처명</th>
+                  <th class="py-2.5 px-2 font-semibold">주력 품목</th>
+                  <th class="py-2.5 px-2 font-semibold">연락처/메모</th>
+                  <th class="py-2.5 px-2 font-semibold text-center">관리</th>
+                </tr>
+              </thead>
+              <tbody id="supplierTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Data Backup / Restore -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">💾 데이터 백업 및 초기화 설정</h2>
+            <p class="text-xs text-slate-500">입력한 모든 재고 및 판매 데이터는 브라우저에 자동 저장되며, 언제든 파일로 백업하거나 복원할 수 있습니다.</p>
+          </div>
+          <div class="space-y-3 pt-2">
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-bold text-slate-800">전체 데이터 JSON 백업 다운로드</div>
+                <div class="text-[11px] text-slate-500">다른 PC로 옮기거나 보관용으로 전체 장부 파일을 저장합니다.</div>
+              </div>
+              <button type="button" id="btnBackupJSON" class="text-xs font-semibold px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white whitespace-nowrap">백업 파일 저장</button>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-bold text-slate-800">샘플 데모 데이터 복원하기</div>
+                <div class="text-[11px] text-slate-500">빔프로젝터·노트북·PC 예시 재고 및 판매 데이터를 다시 불러옵니다.</div>
+              </div>
+              <button type="button" id="btnRestoreDemo" class="text-xs font-semibold px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 whitespace-nowrap">예시 데이터 불러오기</button>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-rose-50/50 border border-rose-200 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-bold text-rose-900">장부 전체 비우기 (새로 시작)</div>
+                <div class="text-[11px] text-rose-600">예시 데이터를 모두 지우고 내 실제 물품부터 0건으로 시작합니다.</div>
+              </div>
+              <button type="button" id="btnClearAllData" class="text-xs font-semibold px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white whitespace-nowrap">전체 비우기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL 1: SELL ITEM (ACTUAL PRICE & DISCOUNT) ==================== -->
+  <div id="sellModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">실판매가 & 할인 반영</span>
+          <h3 class="text-base font-bold text-slate-900 mt-1">상품 판매 출고 및 마진 확정</h3>
+        </div>
+        <button type="button" id="btnCloseSellModal" class="text-slate-400 hover:text-slate-600 text-lg font-bold px-2">✕</button>
+      </div>
+
+      <form id="sellForm" class="space-y-4">
+        <input type="hidden" id="sellItemId">
+
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-500">선택 상품:</span>
+            <strong id="sellModalModelName" class="text-slate-900"></strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">1대당 매입원가 / 기준 판매가:</span>
+            <span>원가 <strong id="sellModalUnitCost" class="text-slate-800"></strong> / 기준가 <strong id="sellModalTargetPrice" class="text-indigo-600"></strong></span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">판매 일자 *</label>
+            <input type="date" id="sellDate" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">판매 수량 (대) *</label>
+            <input type="number" id="sellQty" min="1" value="1" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 font-bold">
+          </div>
+        </div>
+
+        <!-- Discount & Actual Selling Price Controls -->
+        <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-indigo-950">할인(네고) 빠른 적용</label>
+            <div class="flex flex-wrap gap-1">
+              <button type="button" data-disc-type="none" class="sell-disc-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-indigo-100">정가 판매</button>
+              <button type="button" data-disc-type="amt" data-disc-val="10000" class="sell-disc-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-rose-50 text-rose-700">-1만원</button>
+              <button type="button" data-disc-type="amt" data-disc-val="20000" class="sell-disc-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-rose-50 text-rose-700">-2만원</button>
+              <button type="button" data-disc-type="amt" data-disc-val="30000" class="sell-disc-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-rose-50 text-rose-700">-3만원</button>
+              <button type="button" data-disc-type="pct" data-disc-val="5" class="sell-disc-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-rose-50 text-rose-700">-5%</button>
+              <button type="button" data-disc-type="pct" data-disc-val="10" class="sell-disc-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-rose-50 text-rose-700">-10%</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 할인 금액 (원)</label>
+              <input type="number" id="sellUnitDiscount" value="0" step="1000" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white text-rose-600 font-semibold">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-indigo-700 mb-1">1대당 실판매가 (원) *</label>
+              <input type="number" id="sellUnitActualPrice" required step="1000" class="w-full text-xs border-2 border-indigo-500 rounded-lg px-3 py-2 bg-white text-indigo-900 font-bold">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">판매 채널</label>
+              <select id="sellChannel" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
+                <option value="당근마켓">당근마켓</option>
+                <option value="번개장터">번개장터</option>
+                <option value="중고나라">중고나라</option>
+                <option value="스마트스토어">네이버 스마트스토어</option>
+                <option value="직거래/지인">직거래 / 지인할인</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">판매 부대비용 (택배비/수수료 총액)</label>
+              <input type="number" id="sellShippingFee" value="0" min="0" step="500" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">구매자 / 할인 사유 메모</label>
+            <input type="text" id="sellMemo" placeholder="예: 직거래 오셔서 2만원 네고, 가방 서비스 증정" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
+          </div>
+        </div>
+
+        <!-- Live Profit Summary inside Modal -->
+        <div class="p-3.5 rounded-xl bg-slate-900 text-white text-xs space-y-1.5">
+          <div class="flex justify-between">
+            <span class="text-slate-400">총 실판매 결제금액:</span>
+            <strong id="sellPreviewTotalActual" class="text-white">0원</strong>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">기준가 대비 총 할인액:</span>
+            <strong id="sellPreviewTotalDiscount" class="text-rose-300">0원</strong>
+          </div>
+          <div class="flex justify-between pt-1.5 border-t border-slate-700 text-sm">
+            <span class="font-bold text-emerald-300">최종 확정 순수익 (실마진율):</span>
+            <strong id="sellPreviewNetProfit" class="text-emerald-400">0원 (0.0%)</strong>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="btnCancelSellModal" class="text-xs font-medium px-4 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100">취소</button>
+          <button type="submit" class="text-xs font-bold px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">판매 확정 처리</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: EDIT INVENTORY ITEM ==================== -->
+  <div id="editItemModal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900">재고 정보 및 매입/판매가 수정</h3>
+        <button type="button" id="btnCloseEditModal" class="text-slate-400 hover:text-slate-600 text-lg font-bold px-2">✕</button>
+      </div>
+      <form id="editItemForm" class="space-y-3 text-xs">
+        <input type="hidden" id="editItemId">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">상품 / 모델명 *</label>
+          <input type="text" id="editModelName" required class="w-full border border-slate-300 rounded-lg px-3 py-2">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">카테고리</label>
+            <select id="editCategory" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
+              <option value="빔프로젝터">빔프로젝터</option>
+              <option value="노트북">노트북</option>
+              <option value="데스크탑 PC">데스크탑 PC</option>
+              <option value="모니터/주변기기">모니터/주변기기</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">현재 잔여 재고 수량 (대)</label>
+            <input type="number" id="editStockQty" min="0" required class="w-full border border-slate-300 rounded-lg px-3 py-2 font-bold">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">단위 매입가(원)</label>
+            <input type="number" id="editUnitCost" min="0" step="1000" required class="w-full border border-slate-300 rounded-lg px-2.5 py-2">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">단위 부대원가(원)</label>
+            <input type="number" id="editExtraCost" min="0" step="1000" required class="w-full border border-slate-300 rounded-lg px-2.5 py-2">
+          </div>
+          <div>
+            <label class="block font-semibold text-indigo-700 mb-1">기준 판매가(원)</label>
+            <input type="number" id="editTargetPrice" min="0" step="1000" required class="w-full border-2 border-indigo-400 rounded-lg px-2.5 py-2 font-bold">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">스펙 / 메모</label>
+          <input type="text" id="editSpecs" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+        </div>
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" id="btnCancelEditModal" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600">취소</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold">수정 저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <script>
+    // ==================== INITIAL DEMO DATA & STATE ====================
+    const STORAGE_KEY = 'gearstock_pro_erp_v1';
+
+    function getDefaultData() {
+      return {
+        suppliers: [
+          { id: 'sup-1', name: '용산 프로젝터월드 도매', specialty: '엡손/벤큐 빔프로젝터', contact: '02-712-0001 / 김실장' },
+          { id: 'sup-2', name: '강변 테크노 노트북총판', specialty: 'LG그램/갤럭시북 리퍼·중고', contact: '02-3424-0088 / 박팀장' },
+          { id: 'sup-3', name: '선인상가 조립PC파트너스', specialty: '게이밍 데스크탑/그래픽카드', contact: '010-8821-0099' },
+          { id: 'sup-existing', name: '기존 보유재고 (자체보유)', specialty: '장부 도입 전 보유물량', contact: '-' }
+        ],
+        inventory: [
+          {
+            id: 'inv-101',
+            sku: 'PRJ-2611-01',
+            date: '2026-11-02',
+            sourceType: 'WHOLESALE',
+            supplier: '용산 프로젝터월드 도매',
+            category: '빔프로젝터',
+            modelName: '엡손 EB-FH52 풀HD 4000안시 무선 빔프로젝터',
+            condition: '중고 S급',
+            specs: '램프 85시간, 정품 리모컨/전원선/가방 풀세트',
+            initialQty: 3,
+            stockQty: 2,
+            unitCost: 370000,
+            extraCost: 10000,
+            targetPrice: 520000
+          },
+          {
+            id: 'inv-102',
+            sku: 'PRJ-2610-04',
+            date: '2026-10-27',
+            sourceType: 'EXISTING',
+            supplier: '기존 보유재고 (자체보유)',
+            category: '빔프로젝터',
+            modelName: '벤큐 W1070+ 가정용 시네마 풀HD 프로젝터',
+            condition: '중고 A급',
+            specs: '램프 신품교체 완료, 브라켓 증정',
+            initialQty: 2,
+            stockQty: 1,
+            unitCost: 230000,
+            extraCost: 20000,
+            targetPrice: 360000
+          },
+          {
+            id: 'inv-103',
+            sku: 'LTP-2611-02',
+            date: '2026-11-04',
+            sourceType: 'WHOLESALE',
+            supplier: '강변 테크노 노트북총판',
+            category: '노트북',
+            modelName: 'LG 그램 16인치 16ZD90Q (i5-1240P / 16G / 512G)',
+            condition: '중고 S급',
+            specs: '화이트, 배터리 효율 94%, 박스 풀셋',
+            initialQty: 2,
+            stockQty: 1,
+            unitCost: 620000,
+            extraCost: 10000,
+            targetPrice: 820000
+          },
+          {
+            id: 'inv-104',
+            sku: 'PC-2611-01',
+            date: '2026-11-05',
+            sourceType: 'WHOLESALE',
+            supplier: '선인상가 조립PC파트너스',
+            category: '데스크탑 PC',
+            modelName: '라이젠 5600 + RTX 3060 Ti 게이밍 본체 (신품케이스)',
+            condition: '리퍼/전시',
+            specs: 'DDR4 16G, NVMe 500G, 어항케이스 신품교체',
+            initialQty: 2,
+            stockQty: 1,
+            unitCost: 480000,
+            extraCost: 20000,
+            targetPrice: 670000
+          },
+          {
+            id: 'inv-105',
+            sku: 'LTP-2611-05',
+            date: '2026-11-08',
+            sourceType: 'EXISTING',
+            supplier: '기존 보유재고 (자체보유)',
+            category: '노트북',
+            modelName: '삼성 갤럭시북3 프로 14인치 (i5-1340P / 16G / 512G)',
+            condition: '중고 A급',
+            specs: '그라파이트, 충전기 포함',
+            initialQty: 1,
+            stockQty: 1,
+            unitCost: 690000,
+            extraCost: 0,
+            targetPrice: 890000
+          },
+          {
+            id: 'inv-106',
+            sku: 'PRJ-2611-09',
+            date: '2026-11-09',
+            sourceType: 'WHOLESALE',
+            supplier: '용산 프로젝터월드 도매',
+            category: '빔프로젝터',
+            modelName: 'LG 시네빔 PF610P 풀HD 스마트 미니빔',
+            condition: '중고 S급',
+            specs: '실사용 30시간 미만, 삼각대 포함',
+            initialQty: 2,
+            stockQty: 2,
+            unitCost: 340000,
+            extraCost: 0,
+            targetPrice: 460000
+          }
+        ],
+        sales: [
+          {
+            id: 'sale-201',
+            itemId: 'inv-101',
+            date: '2026-11-06',
+            category: '빔프로젝터',
+            modelName: '엡손 EB-FH52 풀HD 4000안시 무선 빔프로젝터',
+            qty: 1,
+            unitCostTotal: 380000,
+            unitTargetPrice: 520000,
+            unitDiscount: 20000,
+            unitActualPrice: 500000,
+            shippingFee: 4500,
+            channel: '당근마켓',
+            memo: '직거래 오셔서 교통비 2만원 할인 판매'
+          },
+          {
+            id: 'sale-202',
+            itemId: 'inv-103',
+            date: '2026-11-07',
+            category: '노트북',
+            modelName: 'LG 그램 16인치 16ZD90Q (i5-1240P / 16G / 512G)',
+            qty: 1,
+            unitCostTotal: 630000,
+            unitTargetPrice: 820000,
+            unitDiscount: 30000,
+            unitActualPrice: 790000,
+            shippingFee: 5000,
+            channel: '번개장터',
+            memo: '대학생 구매자 쿨거래 네고 3만원 적용 + 안전결제 택배'
+          },
+          {
+            id: 'sale-203',
+            itemId: 'inv-104',
+            date: '2026-11-10',
+            category: '데스크탑 PC',
+            modelName: '라이젠 5600 + RTX 3060 Ti 게이밍 본체 (신품케이스)',
+            qty: 1,
+            unitCostTotal: 500000,
+            unitTargetPrice: 670000,
+            unitDiscount: 0,
+            unitActualPrice: 670000,
+            shippingFee: 8000,
+            channel: '스마트스토어',
+            memo: '정가 판매 완료 (파손면책 고속택배 발송)'
+          },
+          {
+            id: 'sale-204',
+            itemId: 'inv-102',
+            date: '2026-10-29',
+            category: '빔프로젝터',
+            modelName: '벤큐 W1070+ 가정용 시네마 풀HD 프로젝터',
+            qty: 1,
+            unitCostTotal: 250000,
+            unitTargetPrice: 360000,
+            unitDiscount: 10000,
+            unitActualPrice: 350000,
+            shippingFee: 4000,
+            channel: '중고나라',
+            memo: '10월 말일 홈시어터 구매자 1만원 할인 판매'
+          }
+        ]
+      };
+    }
+
+    let appState = loadState();
+    let chartCategory = null;
+    let chartComposition = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.inventory) && Array.isArray(parsed.sales)) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Storage read fallback:', e);
+      }
+      return getDefaultData();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Storage save fallback:', e);
+      }
+    }
+
+    function formatKRW(num) {
+      const n = Number(num) || 0;
+      return n.toLocaleString('ko-KR') + '원';
+    }
+
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      const bg = type === 'error' ? 'bg-rose-600' : 'bg-slate-900';
+      el.className = `${bg} text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg border border-white/10 transition-all duration-300`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 2700);
+    }
+
+    // ==================== DATE PERIOD LOGIC ====================
+    function setQuickPeriod(mode) {
+      const startInput = document.getElementById('globalStartDate');
+      const endInput = document.getElementById('globalEndDate');
+      // Reference current date in metadata: 2026-11-11
+      const refToday = new Date(2026, 10, 11);
+
+      const fmt = (d) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
+
+      if (mode === 'this_month') {
+        startInput.value = '2026-11-01';
+        endInput.value = '2026-11-30';
+      } else if (mode === 'last_month') {
+        startInput.value = '2026-10-01';
+        endInput.value = '2026-10-31';
+      } else if (mode === 'cycle_25') {
+        startInput.value = '2026-10-25';
+        endInput.value = '2026-11-24';
+      } else if (mode === 'cycle_15') {
+        startInput.value = '2026-10-15';
+        endInput.value = '2026-11-14';
+      } else if (mode === 'last_30') {
+        const s = new Date(refToday);
+        s.setDate(s.getDate() - 30);
+        startInput.value = fmt(s);
+        endInput.value = '2026-11-30';
+      } else if (mode === 'this_year') {
+        startInput.value = '2026-01-01';
+        endInput.value = '2026-12-31';
+      } else if (mode === 'all_time') {
+        startInput.value = '2020-01-01';
+        endInput.value = '2030-12-31';
+      }
+      renderAll();
+    }
+
+    function isWithinPeriod(dateStr) {
+      const start = document.getElementById('globalStartDate').value;
+      const end = document.getElementById('globalEndDate').value;
+      if (!start || !end) return true;
+      return dateStr >= start && dateStr <= end;
+    }
+
+    // ==================== RENDER FUNCTIONS ====================
+    function renderAll() {
+      const start = document.getElementById('globalStartDate').value;
+      const end = document.getElementById('globalEndDate').value;
+      document.getElementById('dashPeriodLabel').textContent = `조회 기간: ${start} ~ ${end}`;
+
+      // Update Nav Badges
+      const totalStockUnits = appState.inventory.reduce((acc, item) => acc + Number(item.stockQty || 0), 0);
+      const periodSales = appState.sales.filter(s => isWithinPeriod(s.date));
+      document.getElementById('navBadgeStock').textContent = `${totalStockUnits}대`;
+      document.getElementById('navBadgeSales').textContent = `${periodSales.length}건`;
+
+      renderDashboard(periodSales);
+      renderInventoryTable();
+      renderSupplierOptionsAndTable();
+      renderSalesTable(periodSales);
+      renderSettlementReport(periodSales);
+      updateReceiveSimulator();
+    }
+
+    function renderDashboard(periodSales) {
+      // 1. Current Stock Metrics
+      let stockCostTotal = 0;
+      let stockCount = 0;
+      let stockExpectedRev = 0;
+
+      appState.inventory.forEach(item => {
+        const qty = Number(item.stockQty) || 0;
+        const unitTotalCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
+        stockCount += qty;
+        stockCostTotal += qty * unitTotalCost;
+        stockExpectedRev += qty * (Number(item.targetPrice) || 0);
+      });
+
+      document.getElementById('kpiStockCostTotal').textContent = formatKRW(stockCostTotal);
+      document.getElementById('kpiStockCount').textContent = `${stockCount}대`;
+      document.getElementById('kpiStockExpectedRev').textContent = formatKRW(stockExpectedRev);
+
+      // 2. Period Sales & Margin Metrics
+      let actualSalesSum = 0;
+      let soldQtySum = 0;
+      let discountSum = 0;
+      let cogsSum = 0;
+      let feesSum = 0;
+
+      periodSales.forEach(s => {
+        const q = Number(s.qty) || 1;
+        actualSalesSum += (Number(s.unitActualPrice) || 0) * q;
+        soldQtySum += q;
+        discountSum += (Number(s.unitDiscount) || 0) * q;
+        cogsSum += (Number(s.unitCostTotal) || 0) * q;
+        feesSum += Number(s.shippingFee) || 0;
+      });
+
+      const netProfit = actualSalesSum - cogsSum - feesSum;
+      const marginRate = actualSalesSum > 0 ? ((netProfit / actualSalesSum) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('kpiPeriodActualSales').textContent = formatKRW(actualSalesSum);
+      document.getElementById('kpiPeriodSoldCount').textContent = `${soldQtySum}대`;
+      document.getElementById('kpiPeriodDiscountTotal').textContent = formatKRW(discountSum);
+      document.getElementById('kpiPeriodNetProfit').textContent = formatKRW(netProfit);
+      document.getElementById('kpiPeriodMarginRate').textContent = `마진율 ${marginRate}%`;
+      document.getElementById('kpiPeriodCOGS').textContent = formatKRW(cogsSum);
+      document.getElementById('kpiPeriodFees').textContent = formatKRW(feesSum);
+
+      // 3. Period Wholesale Purchases
+      const periodPurchases = appState.inventory.filter(i => i.sourceType === 'WHOLESALE' && isWithinPeriod(i.date));
+      let purchaseSpend = 0;
+      let purchaseQty = 0;
+      periodPurchases.forEach(p => {
+        const q = Number(p.initialQty) || 0;
+        const c = (Number(p.unitCost) || 0) + (Number(p.extraCost) || 0);
+        purchaseQty += q;
+        purchaseSpend += q * c;
+      });
+      const netCashflow = actualSalesSum - feesSum - purchaseSpend;
+
+      document.getElementById('kpiPeriodPurchaseSpend').textContent = formatKRW(purchaseSpend);
+      document.getElementById('kpiPeriodPurchaseQty').textContent = `${purchaseQty}대`;
+      const cashEl = document.getElementById('kpiPeriodCashflow');
+      cashEl.textContent = (netCashflow >= 0 ? '+' : '') + formatKRW(netCashflow);
+      cashEl.className = netCashflow >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold';
+
+      // 4. Quick Stock Table on Dashboard
+      const dashStockBody = document.getElementById('dashStockTableBody');
+      const availableItems = appState.inventory.filter(i => Number(i.stockQty) > 0).slice(0, 5);
+      if (availableItems.length === 0) {
+        dashStockBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">현재 판매 가능한 재고가 없습니다.</td></tr>`;
+      } else {
+        dashStockBody.innerHTML = availableItems.map(item => {
+          const totalUnitCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-3">
+                <div class="font-semibold text-slate-800">${escapeHtml(item.modelName)}</div>
+                <div class="text-[11px] text-slate-400">${escapeHtml(item.category)} · ${escapeHtml(item.condition)}</div>
+              </td>
+              <td class="py-2.5 px-2 text-center">
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${item.stockQty <= 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${item.stockQty}대</span>
+              </td>
+              <td class="py-2.5 px-2 text-right text-slate-600">${formatKRW(totalUnitCost)}</td>
+              <td class="py-2.5 px-2 text-right font-semibold text-indigo-700">${formatKRW(item.targetPrice)}</td>
+              <td class="py-2.5 px-2 text-center">
+                <button type="button" data-sell-id="${item.id}" class="open-sell-modal-btn px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px]">판매처리</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // 5. Recent Sales Table on Dashboard
+      const dashSalesBody = document.getElementById('dashSalesTableBody');
+      const recentSales = [...periodSales].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+      if (recentSales.length === 0) {
+        dashSalesBody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-400">선택한 정산 기간 내 판매 내역이 없습니다.</td></tr>`;
+      } else {
+        dashSalesBody.innerHTML = recentSales.map(s => {
+          const q = Number(s.qty) || 1;
+          const totalTarget = (Number(s.unitTargetPrice) || 0) * q;
+          const totalActual = (Number(s.unitActualPrice) || 0) * q;
+          const totalDisc = (Number(s.unitDiscount) || 0) * q;
+          const profit = totalActual - ((Number(s.unitCostTotal) || 0) * q) - (Number(s.shippingFee) || 0);
+          const mRate = totalActual > 0 ? ((profit / totalActual) * 100).toFixed(1) : '0.0';
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-3">
+                <div class="font-semibold text-slate-800">${escapeHtml(s.modelName)} <span class="text-slate-400 font-normal">(${q}대)</span></div>
+                <div class="text-[11px] text-slate-400">${s.date} · ${escapeHtml(s.channel)}</div>
+              </td>
+              <td class="py-2.5 px-2 text-right">
+                <div class="font-bold text-slate-900">${formatKRW(totalActual)}</div>
+                ${totalDisc > 0 ? `<div class="text-[10px] text-rose-600">기준가 ${formatKRW(totalTarget)} (-${formatKRW(totalDisc)} 할인)</div>` : `<div class="text-[10px] text-slate-400">정가 판매</div>`}
+              </td>
+              <td class="py-2.5 px-2 text-right">
+                <div class="font-bold text-emerald-700">+${formatKRW(profit)}</div>
+                <div class="text-[10px] font-semibold text-indigo-600">마진 ${mRate}%</div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      updateCharts(periodSales);
+    }
+
+    function updateCharts(periodSales) {
+      const categories = ['빔프로젝터', '노트북', '데스크탑 PC', '모니터/주변기기'];
+      const revData = [];
+      const costData = [];
+      const profitData = [];
+      const stockValData = [];
+
+      categories.forEach(cat => {
+        const catSales = periodSales.filter(s => s.category === cat);
+        let r = 0, c = 0, f = 0;
+        catSales.forEach(s => {
+          const q = Number(s.qty) || 1;
+          r += (Number(s.unitActualPrice) || 0) * q;
+          c += (Number(s.unitCostTotal) || 0) * q;
+          f += Number(s.shippingFee) || 0;
+        });
+        revData.push(r);
+        costData.push(c + f);
+        profitData.push(r - c - f);
+
+        const catStock = appState.inventory.filter(i => i.category === cat);
+        let sv = 0;
+        catStock.forEach(i => {
+          sv += (Number(i.stockQty) || 0) * ((Number(i.unitCost) || 0) + (Number(i.extraCost) || 0));
+        });
+        stockValData.push(sv);
+      });
+
+      const ctx1 = document.getElementById('chartCategoryPerformance').getContext('2d');
+      if (chartCategory) chartCategory.destroy();
+      chartCategory = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: categories,
+          datasets: [
+            { label: '실매출액', data: revData, backgroundColor: '#4f46e5', borderRadius: 6 },
+            { label: '매입원가+부대비', data: costData, backgroundColor: '#94a3b8', borderRadius: 6 },
+            { label: '순수익(마진)', data: profitData, backgroundColor: '#10b981', borderRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { font: { size: 11 } } }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: (val) => (val / 10000).toLocaleString() + '만'
+              }
+            }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById('chartStockComposition').getContext('2d');
+      if (chartComposition) chartComposition.destroy();
+      chartComposition = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: categories,
+          datasets: [{
+            data: stockValData,
+            backgroundColor: ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // ==================== INVENTORY TABLE ====================
+    function renderInventoryTable() {
+      const search = (document.getElementById('invSearchInput').value || '').toLowerCase().trim();
+      const catFilter = document.getElementById('invCategoryFilter').value;
+      const srcFilter = document.getElementById('invSourceFilter').value;
+      const statusFilter = document.getElementById('invStatusFilter').value;
+
+      const filtered = appState.inventory.filter(item => {
+        if (catFilter !== 'ALL' && item.category !== catFilter) return false;
+        if (srcFilter !== 'ALL' && item.sourceType !== srcFilter) return false;
+        const q = Number(item.stockQty) || 0;
+        if (statusFilter === 'IN_STOCK' && q <= 0) return false;
+        if (statusFilter === 'LOW_STOCK' && q !== 1) return false;
+        if (statusFilter === 'SOLD_OUT' && q > 0) return false;
+
+        if (search) {
+          const hay = `${item.sku} ${item.modelName} ${item.supplier} ${item.specs} ${item.category}`.toLowerCase();
+          if (!hay.includes(search)) return false;
+        }
+        return true;
+      });
+
+      const tbody = document.getElementById('inventoryTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">조건에 맞는 재고 내역이 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const unitTotalCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
+        const target = Number(item.targetPrice) || 0;
+        const expMargin = target - unitTotalCost;
+        const expMarginRate = target > 0 ? ((expMargin / target) * 100).toFixed(1) : '0.0';
+        const isWholesale = item.sourceType === 'WHOLESALE';
+        const q = Number(item.stockQty) || 0;
+
+        return `
+          <tr class="hover:bg-slate-50/80 ${q === 0 ? 'opacity-60 bg-slate-50' : ''}">
+            <td class="py-3 px-3">
+              <div class="font-mono font-semibold text-slate-700">${escapeHtml(item.sku)}</div>
+              <div class="text-[11px] text-slate-400">${item.date}</div>
+            </td>
+            <td class="py-3 px-3">
+              <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold ${isWholesale ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">
+                ${isWholesale ? '도매처 매입' : '기존 재고'}
+              </span>
+              <div class="text-[11px] text-slate-600 mt-0.5 truncate max-w-[140px]">${escapeHtml(item.supplier)}</div>
+            </td>
+            <td class="py-3 px-3">
+              <div class="text-[11px] font-bold text-indigo-600">${escapeHtml(item.category)}</div>
+              <div class="font-bold text-slate-900">${escapeHtml(item.modelName)}</div>
+              <div class="text-[11px] text-slate-500">${escapeHtml(item.specs || '-')}</div>
+            </td>
+            <td class="py-3 px-2 text-center">
+              <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-medium">${escapeHtml(item.condition)}</span>
+            </td>
+            <td class="py-3 px-2 text-center">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold ${q === 0 ? 'bg-slate-200 text-slate-500' : q === 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                ${q}대
+              </span>
+              <div class="text-[10px] text-slate-400 mt-0.5">초기 ${item.initialQty}대</div>
+            </td>
+            <td class="py-3 px-3 text-right">
+              <div class="font-semibold text-slate-900">${formatKRW(unitTotalCost)}</div>
+              ${Number(item.extraCost) > 0 ? `<div class="text-[10px] text-slate-400">매입 ${formatKRW(item.unitCost)} + 부대 ${formatKRW(item.extraCost)}</div>` : ''}
+            </td>
+            <td class="py-3 px-3 text-right font-bold text-indigo-700">${formatKRW(target)}</td>
+            <td class="py-3 px-3 text-right">
+              <div class="font-bold text-emerald-700">+${formatKRW(expMargin)}</div>
+              <div class="text-[10px] text-slate-500">예상 ${expMarginRate}%</div>
+            </td>
+            <td class="py-3 px-3 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                ${q > 0 ? `<button type="button" data-sell-id="${item.id}" class="open-sell-modal-btn px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] shadow-sm">판매처리</button>` : `<span class="text-[11px] font-semibold text-slate-400 px-2">품절</span>`}
+                <button type="button" data-edit-id="${item.id}" class="open-edit-modal-btn px-2 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-600 text-[11px]">수정</button>
+                <button type="button" data-del-inv-id="${item.id}" class="del-inv-btn px-2 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-[11px]">삭제</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== SALES HISTORY TABLE ====================
+    function renderSalesTable(periodSales) {
+      const chFilter = document.getElementById('salesChannelFilter').value;
+      const discFilter = document.getElementById('salesDiscountFilter').value;
+
+      const filtered = periodSales.filter(s => {
+        if (chFilter !== 'ALL' && s.channel !== chFilter) return false;
+        const disc = Number(s.unitDiscount) || 0;
+        if (discFilter === 'DISCOUNTED' && disc <= 0) return false;
+        if (discFilter === 'REGULAR' && disc > 0) return false;
+        return true;
+      }).sort((a, b) => b.date.localeCompare(a.date));
+
+      const tbody = document.getElementById('salesTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="py-8 text-center text-slate-400">해당 기간 및 필터 조건에 맞는 판매 내역이 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(s => {
+        const q = Number(s.qty) || 1;
+        const totalCost = (Number(s.unitCostTotal) || 0) * q;
+        const totalTarget = (Number(s.unitTargetPrice) || 0) * q;
+        const totalDisc = (Number(s.unitDiscount) || 0) * q;
+        const totalActual = (Number(s.unitActualPrice) || 0) * q;
+        const fee = Number(s.shippingFee) || 0;
+        const netProfit = totalActual - totalCost - fee;
+        const marginRate = totalActual > 0 ? ((netProfit / totalActual) * 100).toFixed(1) : '0.0';
+        const discRate = totalTarget > 0 ? ((totalDisc / totalTarget) * 100).toFixed(1) : '0.0';
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-3">
+              <div class="font-semibold text-slate-800">${s.date}</div>
+              <span class="inline-block mt-0.5 px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold">${escapeHtml(s.channel)}</span>
+            </td>
+            <td class="py-3 px-3">
+              <div class="text-[11px] font-bold text-indigo-600">${escapeHtml(s.category)}</div>
+              <div class="font-bold text-slate-900">${escapeHtml(s.modelName)}</div>
+              <div class="text-[11px] text-slate-500">${escapeHtml(s.memo || '-')}</div>
+            </td>
+            <td class="py-3 px-2 text-center font-bold">${q}대</td>
+            <td class="py-3 px-3 text-right text-slate-600">${formatKRW(totalCost)}</td>
+            <td class="py-3 px-3 text-right text-slate-500">${formatKRW(totalTarget)}</td>
+            <td class="py-3 px-3 text-right">
+              ${totalDisc > 0
+                ? `<span class="font-semibold text-rose-600">-${formatKRW(totalDisc)}</span><div class="text-[10px] text-rose-500">(${discRate}% 할인)</div>`
+                : `<span class="text-slate-400">할인없음</span>`}
+            </td>
+            <td class="py-3 px-3 text-right font-bold text-indigo-700">${formatKRW(totalActual)}</td>
+            <td class="py-3 px-2 text-right text-slate-500">${formatKRW(fee)}</td>
+            <td class="py-3 px-3 text-right">
+              <div class="font-bold ${netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${netProfit >= 0 ? '+' : ''}${formatKRW(netProfit)}</div>
+              <div class="text-[10px] font-semibold text-indigo-600">실마진 ${marginRate}%</div>
+            </td>
+            <td class="py-3 px-2 text-center">
+              <button type="button" data-cancel-sale-id="${s.id}" class="cancel-sale-btn px-2.5 py-1 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-[11px] font-medium">판매취소(재고복원)</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== SETTLEMENT REPORT ====================
+    function renderSettlementReport(periodSales) {
+      let targetRev = 0, discountSum = 0, actualRev = 0, cogs = 0, fees = 0;
+      periodSales.forEach(s => {
+        const q = Number(s.qty) || 1;
+        targetRev += (Number(s.unitTargetPrice) || 0) * q;
+        discountSum += (Number(s.unitDiscount) || 0) * q;
+        actualRev += (Number(s.unitActualPrice) || 0) * q;
+        cogs += (Number(s.unitCostTotal) || 0) * q;
+        fees += Number(s.shippingFee) || 0;
+      });
+
+      const netProfit = actualRev - cogs - fees;
+      const marginRate = actualRev > 0 ? ((netProfit / actualRev) * 100).toFixed(1) : '0.0';
+
+      let newPurchaseOut = 0;
+      let existingRegVal = 0;
+      appState.inventory.filter(i => isWithinPeriod(i.date)).forEach(i => {
+        const val = (Number(i.initialQty) || 0) * ((Number(i.unitCost) || 0) + (Number(i.extraCost) || 0));
+        if (i.sourceType === 'WHOLESALE') newPurchaseOut += val;
+        else existingRegVal += val;
+      });
+
+      const netCashflow = actualRev - fees - newPurchaseOut;
+
+      document.getElementById('settleTargetRev').textContent = formatKRW(targetRev);
+      document.getElementById('settleDiscountSum').textContent = formatKRW(discountSum);
+      document.getElementById('settleActualRev').textContent = formatKRW(actualRev);
+      document.getElementById('settleCOGS').textContent = formatKRW(cogs);
+      document.getElementById('settleSalesFees').textContent = formatKRW(fees);
+      document.getElementById('settleNetProfit').textContent = `${formatKRW(netProfit)} (${marginRate}%)`;
+      document.getElementById('settleNewPurchaseOut').textContent = formatKRW(newPurchaseOut);
+      document.getElementById('settleExistingRegVal').textContent = formatKRW(existingRegVal);
+      document.getElementById('settleNetCashflow').textContent = (netCashflow >= 0 ? '+' : '') + formatKRW(netCashflow);
+
+      // Category Settlement Table
+      const categories = ['빔프로젝터', '노트북', '데스크탑 PC', '모니터/주변기기'];
+      const catBody = document.getElementById('settleCategoryTableBody');
+      catBody.innerHTML = categories.map(cat => {
+        const list = periodSales.filter(s => s.category === cat);
+        let qSum = 0, revSum = 0, discSum = 0, profSum = 0;
+        list.forEach(s => {
+          const q = Number(s.qty) || 1;
+          const r = (Number(s.unitActualPrice) || 0) * q;
+          const c = (Number(s.unitCostTotal) || 0) * q;
+          const f = Number(s.shippingFee) || 0;
+          qSum += q;
+          revSum += r;
+          discSum += (Number(s.unitDiscount) || 0) * q;
+          profSum += (r - c - f);
+        });
+        const m = revSum > 0 ? ((profSum / revSum) * 100).toFixed(1) : '0.0';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-semibold text-slate-800">${cat}</td>
+            <td class="py-2.5 px-2 text-center font-bold">${qSum}대</td>
+            <td class="py-2.5 px-2 text-right font-semibold">${formatKRW(revSum)}</td>
+            <td class="py-2.5 px-2 text-right text-rose-600">${formatKRW(discSum)}</td>
+            <td class="py-2.5 px-2 text-right font-bold text-emerald-700">${formatKRW(profSum)} <span class="text-[10px] text-indigo-600">(${m}%)</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      // Channel Settlement Table
+      const channels = ['당근마켓', '번개장터', '중고나라', '스마트스토어', '직거래/지인'];
+      const chBody = document.getElementById('settleChannelTableBody');
+      chBody.innerHTML = channels.map(ch => {
+        const list = periodSales.filter(s => s.channel === ch);
+        let cnt = list.length, revSum = 0, feeSum = 0, profSum = 0;
+        list.forEach(s => {
+          const q = Number(s.qty) || 1;
+          const r = (Number(s.unitActualPrice) || 0) * q;
+          const c = (Number(s.unitCostTotal) || 0) * q;
+          const f = Number(s.shippingFee) || 0;
+          revSum += r;
+          feeSum += f;
+          profSum += (r - c - f);
+        });
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-semibold text-slate-800">${ch}</td>
+            <td class="py-2.5 px-2 text-center">${cnt}건</td>
+            <td class="py-2.5 px-2 text-right font-semibold">${formatKRW(revSum)}</td>
+            <td class="py-2.5 px-2 text-right text-slate-500">${formatKRW(feeSum)}</td>
+            <td class="py-2.5 px-2 text-right font-bold text-emerald-700">${formatKRW(profSum)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== SUPPLIERS & FORM HELPERS ====================
+    function renderSupplierOptionsAndTable() {
+      const select = document.getElementById('recSupplier');
+      select.innerHTML = appState.suppliers.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)} (${escapeHtml(s.specialty)})</option>`).join('');
+
+      const tbody = document.getElementById('supplierTableBody');
+      tbody.innerHTML = appState.suppliers.map(s => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-semibold text-slate-800">${escapeHtml(s.name)}</td>
+          <td class="py-2.5 px-2 text-slate-600">${escapeHtml(s.specialty)}</td>
+          <td class="py-2.5 px-2 text-slate-500">${escapeHtml(s.contact)}</td>
+          <td class="py-2.5 px-2 text-center">
+            ${s.id !== 'sup-existing' ? `<button type="button" data-del-sup-id="${s.id}" class="del-sup-btn text-[11px] text-rose-600 hover:underline">삭제</button>` : '<span class="text-[10px] text-slate-400">기본</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateReceiveSimulator() {
+      const qty = Number(document.getElementById('recQty').value) || 1;
+      const unitCost = Number(document.getElementById('recUnitCost').value) || 0;
+      const extraCost = Number(document.getElementById('recExtraCost').value) || 0;
+      const targetPrice = Number(document.getElementById('recTargetPrice').value) || 0;
+
+      const unitTotalCost = unitCost + extraCost;
+      const unitMargin = targetPrice - unitTotalCost;
+      const marginRate = targetPrice > 0 ? ((unitMargin / targetPrice) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('simUnitTotalCost').textContent = formatKRW(unitTotalCost);
+      document.getElementById('simUnitTargetPrice').textContent = formatKRW(targetPrice);
+      document.getElementById('simUnitMargin').textContent = `${formatKRW(unitMargin)} (${marginRate}%)`;
+      document.getElementById('simQtyLabel').textContent = qty;
+      document.getElementById('simTotalInvestment').textContent = formatKRW(unitTotalCost * qty);
+      document.getElementById('simTotalProfit').textContent = formatKRW(unitMargin * qty);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ==================== TAB NAVIGATION ====================
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      const target = document.getElementById(`tab-${tabName}`);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabName) {
+          btn.classList.add('tab-active');
+          btn.classList.remove('text-slate-600', 'hover:bg-slate-200/70');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.classList.add('text-slate-600', 'hover:bg-slate-200/70');
+        }
+      });
+    }
+
+    // ==================== SELL MODAL LOGIC ====================
+    let activeSellItem = null;
+
+    function openSellModal(itemId) {
+      const item = appState.inventory.find(i => i.id === itemId);
+      if (!item || Number(item.stockQty) <= 0) {
+        showToast('판매 가능한 재고 수량이 없습니다.', 'error');
+        return;
+      }
+      activeSellItem = item;
+      const unitTotalCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
+
+      document.getElementById('sellItemId').value = item.id;
+      document.getElementById('sellModalModelName').textContent = `${item.modelName} (잔여 ${item.stockQty}대)`;
+      document.getElementById('sellModalUnitCost').textContent = formatKRW(unitTotalCost);
+      document.getElementById('sellModalTargetPrice').textContent = formatKRW(item.targetPrice);
+
+      document.getElementById('sellDate').value = '2026-11-11';
+      const qtyInput = document.getElementById('sellQty');
+      qtyInput.value = 1;
+      qtyInput.max = item.stockQty;
+
+      document.getElementById('sellUnitDiscount').value = 0;
+      document.getElementById('sellUnitActualPrice').value = item.targetPrice;
+      document.getElementById('sellShippingFee').value = 0;
+      document.getElementById('sellMemo').value = '';
+
+      updateSellModalPreview();
+      document.getElementById('sellModal').classList.remove('hidden');
+    }
+
+    function updateSellModalPreview() {
+      if (!activeSellItem) return;
+      const q = Number(document.getElementById('sellQty').value) || 1;
+      const actualUnit = Number(document.getElementById('sellUnitActualPrice').value) || 0;
+      const discUnit = Number(document.getElementById('sellUnitDiscount').value) || 0;
+      const fee = Number(document.getElementById('sellShippingFee').value) || 0;
+      const unitTotalCost = (Number(activeSellItem.unitCost) || 0) + (Number(activeSellItem.extraCost) || 0);
+
+      const totalActual = actualUnit * q;
+      const totalDisc = discUnit * q;
+      const netProfit = totalActual - (unitTotalCost * q) - fee;
+      const mRate = totalActual > 0 ? ((netProfit / totalActual) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('sellPreviewTotalActual').textContent = formatKRW(totalActual);
+      document.getElementById('sellPreviewTotalDiscount').textContent = formatKRW(totalDisc);
+      document.getElementById('sellPreviewNetProfit').textContent = `${formatKRW(netProfit)} (${mRate}%)`;
+    }
+
+    // ==================== EDIT MODAL LOGIC ====================
+    function openEditModal(itemId) {
+      const item = appState.inventory.find(i => i.id === itemId);
+      if (!item) return;
+      document.getElementById('editItemId').value = item.id;
+      document.getElementById('editModelName').value = item.modelName;
+      document.getElementById('editCategory').value = item.category;
+      document.getElementById('editStockQty').value = item.stockQty;
+      document.getElementById('editUnitCost').value = item.unitCost;
+      document.getElementById('editExtraCost').value = item.extraCost || 0;
+      document.getElementById('editTargetPrice').value = item.targetPrice;
+      document.getElementById('editSpecs').value = item.specs || '';
+      document.getElementById('editItemModal').classList.remove('hidden');
+    }
+
+    // ==================== EVENT LISTENERS ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Default Dates
+      document.getElementById('recDate').value = '2026-11-11';
+      setQuickPeriod('this_month');
+
+      // Nav tabs
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+      });
+
+      // Header & Dashboard quick navigation buttons
+      document.getElementById('btnOpenQuickReceive').addEventListener('click', () => switchTab('receive'));
+      document.getElementById('btnGoSettlementFromDash').addEventListener('click', () => switchTab('settlement'));
+      document.getElementById('btnGoInventoryFromDash').addEventListener('click', () => switchTab('inventory'));
+      document.getElementById('btnDashViewAllStock').addEventListener('click', () => switchTab('inventory'));
+      document.getElementById('btnDashViewAllSales').addEventListener('click', () => switchTab('sales'));
+      document.getElementById('btnGoReceiveFromInv').addEventListener('click', () => switchTab('receive'));
+
+      // Global Date Period Controls
+      document.getElementById('quickPeriodSelect').addEventListener('change', (e) => {
+        if (e.target.value !== 'custom') {
+          setQuickPeriod(e.target.value);
+        }
+      });
+      document.getElementById('globalStartDate').addEventListener('change', () => {
+        document.getElementById('quickPeriodSelect').value = 'custom';
+        renderAll();
+      });
+      document.getElementById('globalEndDate').addEventListener('change', () => {
+        document.getElementById('quickPeriodSelect').value = 'custom';
+        renderAll();
+      });
+
+      // Settlement Quick Buttons
+      document.querySelectorAll('.settle-quick-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const r = btn.getAttribute('data-settle-range');
+          const sInput = document.getElementById('globalStartDate');
+          const eInput = document.getElementById('globalEndDate');
+          document.getElementById('quickPeriodSelect').value = 'custom';
+          if (r === '2026-11') {
+            sInput.value = '2026-11-01';
+            eInput.value = '2026-11-30';
+          } else if (r === '2026-10') {
+            sInput.value = '2026-10-01';
+            eInput.value = '2026-10-31';
+          } else if (r === 'cycle25_nov') {
+            sInput.value = '2026-10-25';
+            eInput.value = '2026-11-24';
+          } else if (r === 'all') {
+            sInput.value = '2020-01-01';
+            eInput.value = '2030-12-31';
+          }
+          renderAll();
+          showToast('정산 조회 기간이 변경되었습니다.');
+        });
+      });
+
+      // Inventory Filters
+      ['invSearchInput', 'invCategoryFilter', 'invSourceFilter', 'invStatusFilter'].forEach(id => {
+        document.getElementById(id).addEventListener('input', renderInventoryTable);
+        document.getElementById(id).addEventListener('change', renderInventoryTable);
+      });
+
+      // Sales Filters
+      ['salesChannelFilter', 'salesDiscountFilter'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+          const periodSales = appState.sales.filter(s => isWithinPeriod(s.date));
+          renderSalesTable(periodSales);
+        });
+      });
+
+      // Receive Mode Toggle (1. 도매처 신규 매입 vs 2. 기존 보유 재고 등록)
+      const btnWholesale = document.getElementById('modeBtnWholesale');
+      const btnExisting = document.getElementById('modeBtnExisting');
+      const recSourceInput = document.getElementById('recSourceType');
+      const recNotice = document.getElementById('recModeNotice');
+      const recSupplier = document.getElementById('recSupplier');
+
+      btnWholesale.addEventListener('click', () => {
+        recSourceInput.value = 'WHOLESALE';
+        btnWholesale.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-sm transition';
+        btnExisting.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
+        recNotice.className = 'p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-900';
+        recNotice.innerHTML = '<span><strong>[도매처 신규 매입 입고]</strong> 도매 거래처에서 매입한 내역을 기록하며, 해당 입고일 기준 기간 정산 시 매입 지출액에 반영됩니다.</span>';
+      });
+
+      btnExisting.addEventListener('click', () => {
+        recSourceInput.value = 'EXISTING';
+        btnExisting.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white shadow-sm transition';
+        btnWholesale.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
+        recNotice.className = 'p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900';
+        recNotice.innerHTML = '<span><strong>[기존 보유 재고 등록]</strong> 프로그램 사용 전 이미 보유하고 있던 재고를 등록합니다. 매입원가는 판매 마진 계산에만 쓰이고 신규 현금지출에서는 제외됩니다.</span>';
+        recSupplier.value = '기존 보유재고 (자체보유)';
+      });
+
+      // Margin Preset Calculator Buttons in Receive Form
+      document.querySelectorAll('.margin-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pct = Number(btn.getAttribute('data-margin-Jump')) || 20;
+          const cost = (Number(document.getElementById('recUnitCost').value) || 0) + (Number(document.getElementById('recExtraCost').value) || 0);
+          if (cost <= 0) {
+            showToast('먼저 1대당 매입가를 입력해주세요.', 'error');
+            return;
+          }
+          const suggested = Math.round((cost * (1 + pct / 100)) / 1000) * 1000;
+          document.getElementById('recTargetPrice').value = suggested;
+          updateReceiveSimulator();
+        });
+      });
+
+      // Receive Simulator Live Update
+      ['recQty', 'recUnitCost', 'recExtraCost', 'recTargetPrice'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateReceiveSimulator);
+      });
+
+      // Quick Product Preset Fill Buttons
+      document.querySelectorAll('.preset-fill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = btn.getAttribute('data-Preset');
+          if (p === 'projector') {
+            document.getElementById('recCategory').value = '빔프로젝터';
+            document.getElementById('recModelName').value = '엡손 EB-FH52 무선 풀HD 빔프로젝터';
+            document.getElementById('recCondition').value = '중고 S급';
+            document.getElementById('recSpecs').value = '램프 100시간 미만, 가방/리모컨 포함';
+            document.getElementById('recUnitCost').value = 370000;
+            document.getElementById('recExtraCost').value = 10000;
+            document.getElementById('recTargetPrice').value = 520000;
+          } else if (p === 'laptop') {
+            document.getElementById('recCategory').value = '노트북';
+            document.getElementById('recModelName').value = 'LG 그램 15인치 i5-12세대 16GB/512GB';
+            document.getElementById('recCondition').value = '중고 S급';
+            document.getElementById('recSpecs').value = '스노우 화이트, 정품 충전기/파우치 포함';
+            document.getElementById('recUnitCost').value = 580000;
+            document.getElementById('recExtraCost').value = 0;
+            document.getElementById('recTargetPrice').value = 760000;
+          } else if (p === 'desktop') {
+            document.getElementById('recCategory').value = '데스크탑 PC';
+            document.getElementById('recModelName').value = '게이밍 데스크탑 (라이젠 5600 + RTX 3060 12G)';
+            document.getElementById('recCondition').value = '리퍼/전시';
+            document.getElementById('recSpecs').value = '16GB RAM, NVMe 512GB, 신품 강화유리 케이스';
+            document.getElementById('recUnitCost').value = 470000;
+            document.getElementById('recExtraCost').value = 20000;
+            document.getElementById('recTargetPrice').value = 650000;
+          }
+          updateReceiveSimulator();
+          showToast('예시 품목 정보가 입력되었습니다.');
+        });
+      });
+
+      // Submit Receive Form
+      document.getElementById('receiveForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const cat = document.getElementById('recCategory').value;
+        const prefix = cat === '빔프로젝터' ? 'PRJ' : cat === '노트북' ? 'LTP' : cat === '데스크탑 PC' ? 'PC' : 'ETC';
+        const autoSku = `${prefix}-${String(Date.now()).slice(-5)}`;
+        const qty = Number(document.getElementById('recQty').value) || 1;
+
+        const newItem = {
+          id: 'inv-' + Date.now(),
+          sku: document.getElementById('recSku').value.trim() || autoSku,
+          date: document.getElementById('recDate').value || '2026-11-11',
+          sourceType: document.getElementById('recSourceType').value,
+          supplier: document.getElementById('recSupplier').value,
+          category: cat,
+          modelName: document.getElementById('recModelName').value.trim(),
+          condition: document.getElementById('recCondition').value,
+          specs: document.getElementById('recSpecs').value.trim(),
+          initialQty: qty,
+          stockQty: qty,
+          unitCost: Number(document.getElementById('recUnitCost').value) || 0,
+          extraCost: Number(document.getElementById('recExtraCost').value) || 0,
+          targetPrice: Number(document.getElementById('recTargetPrice').value) || 0
+        };
+
+        appState.inventory.unshift(newItem);
+        saveState();
+        renderAll();
+        e.target.reset();
+        document.getElementById('recDate').value = '2026-11-11';
+        document.getElementById('recQty').value = 1;
+        document.getElementById('recExtraCost').value = 0;
+        updateReceiveSimulator();
+        showToast('재고 장부에 성공적으로 등록되었습니다!');
+        switchTab('inventory');
+      });
+
+      // Delegated clicks for tables (Open Sell Modal, Edit Modal, Delete Inventory, Cancel Sale, Delete Supplier)
+      document.body.addEventListener('click', (e) => {
+        const sellBtn = e.target.closest('.open-sell-modal-btn');
+        if (sellBtn) {
+          openSellModal(sellBtn.getAttribute('data-sell-id'));
+          return;
+        }
+
+        const editBtn = e.target.closest('.open-edit-modal-btn');
+        if (editBtn) {
+          openEditModal(editBtn.getAttribute('data-edit-id'));
+          return;
+        }
+
+        const delInvBtn = e.target.closest('.del-inv-btn');
+        if (delInvBtn) {
+          const id = delInvBtn.getAttribute('data-del-inv-id');
+          appState.inventory = appState.inventory.filter(i => i.id !== id);
+          saveState();
+          renderAll();
+          showToast('선택한 재고 항목이 삭제되었습니다.');
+          return;
+        }
+
+        const cancelSaleBtn = e.target.closest('.cancel-sale-btn');
+        if (cancelSaleBtn) {
+          const saleId = cancelSaleBtn.getAttribute('data-cancel-sale-id');
+          const saleObj = appState.sales.find(s => s.id === saleId);
+          if (saleObj) {
+            const invItem = appState.inventory.find(i => i.id === saleObj.itemId);
+            if (invItem) {
+              invItem.stockQty = Number(invItem.stockQty || 0) + Number(saleObj.qty || 1);
+            }
+            appState.sales = appState.sales.filter(s => s.id !== saleId);
+            saveState();
+            renderAll();
+            showToast('판매 내역이 취소되고 재고 수량이 복원되었습니다.');
+          }
+          return;
+        }
+
+        const delSupBtn = e.target.closest('.del-sup-btn');
+        if (delSupBtn) {
+          const supId = delSupBtn.getAttribute('data-del-sup-id');
+          appState.suppliers = appState.suppliers.filter(s => s.id !== supId);
+          saveState();
+          renderSupplierOptionsAndTable();
+          showToast('거래처가 삭제되었습니다.');
+        }
+      });
+
+      // Sell Modal Discount Quick Buttons & Two-Way Sync
+      document.querySelectorAll('.sell-disc-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!activeSellItem) return;
+          const target = Number(activeSellItem.targetPrice) || 0;
+          const type = btn.getAttribute('data-disc-type');
+          const val = Number(btn.getAttribute('data-disc-val')) || 0;
+          let disc = 0;
+          if (type === 'amt') disc = val;
+          else if (type === 'pct') disc = Math.round((target * (val / 100)) / 1000) * 1000;
+
+          document.getElementById('sellUnitDiscount').value = disc;
+          document.getElementById('sellUnitActualPrice').value = Math.max(0, target - disc);
+          updateSellModalPreview();
+        });
+      });
+
+      document.getElementById('sellUnitDiscount').addEventListener('input', (e) => {
+        if (!activeSellItem) return;
+        const target = Number(activeSellItem.targetPrice) || 0;
+        const disc = Number(e.target.value) || 0;
+        document.getElementById('sellUnitActualPrice').value = Math.max(0, target - disc);
+        updateSellModalPreview();
+      });
+
+      document.getElementById('sellUnitActualPrice').addEventListener('input', (e) => {
+        if (!activeSellItem) return;
+        const target = Number(activeSellItem.targetPrice) || 0;
+        const actual = Number(e.target.value) || 0;
+        document.getElementById('sellUnitDiscount').value = Math.max(0, target - actual);
+        updateSellModalPreview();
+      });
+
+      ['sellQty', 'sellShippingFee'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateSellModalPreview);
+      });
+
+      // Close Sell Modal
+      ['btnCloseSellModal', 'btnCancelSellModal'].forEach(id => {
+        document.getElementById(id).addEventListener('click', () => {
+          document.getElementById('sellModal').classList.add('hidden');
+        });
+      });
+
+      // Submit Sell Form
+      document.getElementById('sellForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!activeSellItem) return;
+        const q = Number(document.getElementById('sellQty').value) || 1;
+        if (q > Number(activeSellItem.stockQty)) {
+          showToast('보유 재고 수량을 초과하여 판매할 수 없습니다.', 'error');
+          return;
+        }
+
+        const unitTotalCost = (Number(activeSellItem.unitCost) || 0) + (Number(activeSellItem.extraCost) || 0);
+        const unitActual = Number(document.getElementById('sellUnitActualPrice').value) || 0;
+        const unitDisc = Number(document.getElementById('sellUnitDiscount').value) || 0;
+
+        const newSale = {
+          id: 'sale-' + Date.now(),
+          itemId: activeSellItem.id,
+          date: document.getElementById('sellDate').value || '2026-11-11',
+          category: activeSellItem.category,
+          modelName: activeSellItem.modelName,
+          qty: q,
+          unitCostTotal: unitTotalCost,
+          unitTargetPrice: Number(activeSellItem.targetPrice) || 0,
+          unitDiscount: unitDisc,
+          unitActualPrice: unitActual,
+          shippingFee: Number(document.getElementById('sellShippingFee').value) || 0,
+          channel: document.getElementById('sellChannel').value,
+          memo: document.getElementById('sellMemo').value.trim()
+        };
+
+        activeSellItem.stockQty = Number(activeSellItem.stockQty) - q;
+        appState.sales.unshift(newSale);
+        saveState();
+        document.getElementById('sellModal').classList.add('hidden');
+        renderAll();
+        showToast('판매 및 실마진 정산 내역이 반영되었습니다!');
+      });
+
+      // Edit Modal Close & Submit
+      ['btnCloseEditModal', 'btnCancelEditModal'].forEach(id => {
+        document.getElementById(id).addEventListener('click', () => {
+          document.getElementById('editItemModal').classList.add('hidden');
+        });
+      });
+
+      document.getElementById('editItemForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editItemId').value;
+        const item = appState.inventory.find(i => i.id === id);
+        if (!item) return;
+
+        item.modelName = document.getElementById('editModelName').value.trim();
+        item.category = document.getElementById('editCategory').value;
+        item.stockQty = Number(document.getElementById('editStockQty').value) || 0;
+        item.unitCost = Number(document.getElementById('editUnitCost').value) || 0;
+        item.extraCost = Number(document.getElementById('editExtraCost').value) || 0;
+        item.targetPrice = Number(document.getElementById('editTargetPrice').value) || 0;
+        item.specs = document.getElementById('editSpecs').value.trim();
+
+        saveState();
+        document.getElementById('editItemModal').classList.add('hidden');
+        renderAll();
+        showToast('재고 및 가격 정보가 수정되었습니다.');
+      });
+
+      // Supplier Form
+      document.getElementById('supplierForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        appState.suppliers.push({
+          id: 'sup-' + Date.now(),
+          name: document.getElementById('supName').value.trim(),
+          specialty: document.getElementById('supSpecialty').value.trim() || 'IT기기 일반',
+          contact: document.getElementById('supContact').value.trim() || '-'
+        });
+        saveState();
+        e.target.reset();
+        renderSupplierOptionsAndTable();
+        showToast('새 도매 거래처가 등록되었습니다.');
+      });
+
+      // Export CSV
+      document.getElementById('btnExportCSV').addEventListener('click', () => {
+        let csv = '\uFEFF구분,일자,카테고리,모델명,수량,단위매입원가,기준판매가,실판매가,할인액,부대비용,순수익\n';
+        appState.inventory.forEach(i => {
+          const c = (Number(i.unitCost) || 0) + (Number(i.extraCost) || 0);
+          csv += `재고보유(${i.sourceType === 'WHOLESALE' ? '도매매입' : '기존재고'}),${i.date},${i.category},"${i.modelName}",${i.stockQty},${c},${i.targetPrice},-,-,-,-\n`;
+        });
+        appState.sales.forEach(s => {
+          const q = Number(s.qty) || 1;
+          const rev = (Number(s.unitActualPrice) || 0) * q;
+          const cost = (Number(s.unitCostTotal) || 0) * q;
+          const disc = (Number(s.unitDiscount) || 0) * q;
+          const profit = rev - cost - (Number(s.shippingFee) || 0);
+          csv += `판매완료(${s.channel}),${s.date},${s.category},"${s.modelName}",${q},${cost},${(Number(s.unitTargetPrice) || 0) * q},${rev},${disc},${s.shippingFee},${profit}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `기어스톡_재고및정산장부_${document.getElementById('globalStartDate').value}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('엑셀(CSV) 파일이 다운로드되었습니다.');
+      });
+
+      // Backup JSON / Restore / Clear
+      document.getElementById('btnBackupJSON').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'gearstock_backup.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('JSON 백업 파일이 저장되었습니다.');
+      });
+
+      document.getElementById('btnRestoreDemo').addEventListener('click', () => {
+        appState = getDefaultData();
+        saveState();
+        renderAll();
+        showToast('샘플 예시 데이터가 복원되었습니다.');
+      });
+
+      document.getElementById('btnClearAllData').addEventListener('click', () => {
+        appState.inventory = [];
+        appState.sales = [];
+        saveState();
+        renderAll();
+        showToast('모든 재고 및 판매 내역이 초기화되었습니다.');
+      });
+    });
+  </script>
+</body>
+</html>
