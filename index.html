@@ -52,51 +52,60 @@
 
   <!-- Top Header -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-          GS
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-lg font-bold text-slate-900 tracking-tight">기어스톡 Pro</h1>
-            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">IT 기기 셀러 ERP</span>
+    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-3 space-y-2.5">
+      <!-- Row 1: Brand & Action Buttons -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-sm flex-shrink-0">
+            GS
           </div>
-          <p class="text-xs text-slate-500">제품 매입/재고/할인판매/월별 정산</p>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">기어스톡 Pro</h1>
+              <span class="text-[10px] sm:text-xs font-semibold px-1.5 py-0.2 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">ERP</span>
+            </div>
+            <p class="text-[11px] text-slate-500 hidden sm:block">제품 매입/재고/할인판매/월별 정산</p>
+          </div>
+        </div>
+
+        <!-- Quick Top Action Buttons -->
+        <div class="flex items-center gap-1.5">
+          <button id="btnOpenQuickReceive" class="text-xs font-bold px-3 py-1.5 sm:py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition flex items-center gap-1 whitespace-nowrap">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            <span>물품 등록</span>
+          </button>
+          <button id="btnExportCSV" class="text-xs font-semibold px-2.5 py-1.5 sm:py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1 whitespace-nowrap shadow-sm">
+            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span class="hidden sm:inline">엑셀</span><span>CSV</span>
+          </button>
         </div>
       </div>
 
-      <!-- Global Settlement Period Bar -->
-      <div class="flex flex-wrap items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
-        <span class="text-xs font-semibold text-slate-600 flex items-center gap-1">
-          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          정산 기준 기간:
-        </span>
-        <input type="date" id="globalStartDate" class="text-xs bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <span class="text-xs text-slate-400">~</span>
-        <input type="date" id="globalEndDate" class="text-xs bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <select id="quickPeriodSelect" class="text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 font-medium rounded-lg px-2 py-1 focus:outline-none">
-          <option value="this_month">이번 달 (1일~말일)</option>
-          <option value="last_month">지난 달 전체</option>
-          <option value="cycle_25">25일 정산주기 (전월25일~당월24일)</option>
-          <option value="cycle_15">15일 정산주기 (전월15일~당월14일)</option>
-          <option value="last_30">최근 30일</option>
-          <option value="this_year">올해 전체</option>
-          <option value="all_time">전체 기간</option>
-          <option value="custom">직접 날짜 지정</option>
-        </select>
-      </div>
+      <!-- Row 2: Settlement Period Bar (Clean 2-line layout on mobile) -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-2 sm:px-3 sm:py-1.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+        <div class="flex items-center justify-between sm:justify-start gap-1.5 w-full sm:w-auto">
+          <span class="text-[11px] font-bold text-slate-600 flex items-center gap-1 whitespace-nowrap">
+            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            정산 기간
+          </span>
+          <!-- Quick Preset Select -->
+          <select id="quickPeriodSelect" class="text-xs bg-white border border-indigo-200 text-indigo-700 font-bold rounded-lg px-2 py-1 focus:outline-none shadow-sm flex-1 sm:flex-none">
+            <option value="this_month">이번 달 (1일~말일)</option>
+            <option value="last_month">지난 달 전체</option>
+            <option value="cycle_25">25일 정산주기 (전월25~당월24)</option>
+            <option value="cycle_15">15일 정산주기 (전월15~당월14)</option>
+            <option value="last_30">최근 30일</option>
+            <option value="this_year">올해 전체</option>
+            <option value="all_time">전체 기간</option>
+            <option value="custom">직접 날짜 지정</option>
+          </select>
+        </div>
 
-      <!-- Quick Actions -->
-      <div class="flex items-center gap-2">
-        <button id="btnOpenQuickReceive" class="text-xs font-semibold px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          물품 등록/입고
-        </button>
-        <button id="btnExportCSV" class="text-xs font-medium px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition flex items-center gap-1">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          엑셀(CSV) 다운로드
-        </button>
+        <div class="flex items-center gap-1.5 w-full sm:w-auto">
+          <input type="date" id="globalStartDate" class="flex-1 sm:flex-none text-xs bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+          <span class="text-xs text-slate-400 font-bold">~</span>
+          <input type="date" id="globalEndDate" class="flex-1 sm:flex-none text-xs bg-white border border-slate-300 rounded-lg px-2 py-1 text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+        </div>
       </div>
     </div>
 
@@ -221,8 +230,8 @@
         <div class="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div>
-              <h3 class="text-sm font-bold text-slate-900">품목 카테고리별 매출 · 매입원가 · 순수익 비교</h3>
-              <p class="text-xs text-slate-500">선택한 정산 기간 내 판매 실적</p>
+              <h3 class="text-sm font-bold text-slate-900">제품별 매출 · 원가 · 순수익 비교</h3>
+              <p class="text-xs text-slate-500">선택한 정산 기간 내 제품 판매 실적</p>
             </div>
           </div>
           <div class="relative h-64">
@@ -232,8 +241,8 @@
 
         <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
           <div class="mb-4">
-            <h3 class="text-sm font-bold text-slate-900">현재 보유 재고 자산 비중</h3>
-            <p class="text-xs text-slate-500">카테고리별 묶여있는 재고 매입원가 비율</p>
+            <h3 class="text-sm font-bold text-slate-900">보유 재고 자산 비중</h3>
+            <p class="text-xs text-slate-500">제품별 재고 자산 비율</p>
           </div>
           <div class="relative h-64">
             <canvas id="chartStockComposition"></canvas>
@@ -241,18 +250,23 @@
         </div>
       </div>
 
-      <!-- Bottom Quick Overview Tables -->
+      <!-- Bottom Quick Overview (Mobile Cards + Desktop Table) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Available Stock Quick List -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
           <div class="flex items-center justify-between mb-3">
             <div>
               <h3 class="text-sm font-bold text-slate-900">즉시 판매 가능 재고 현황</h3>
-              <p class="text-xs text-slate-500">우측 '판매처리' 버튼으로 할인/실판매가를 바로 입력할 수 있습니다</p>
+              <p class="text-xs text-slate-500">할인/실판매가를 입력하여 바로 출고합니다</p>
             </div>
-            <button id="btnDashViewAllStock" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">전체 보기 →</button>
+            <button id="btnDashViewAllStock" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 whitespace-nowrap">전체 보기 →</button>
           </div>
-          <div class="overflow-x-auto custom-scrollbar">
+
+          <!-- Mobile Cards for Dash Stock -->
+          <div id="dashStockMobileList" class="block sm:hidden space-y-2.5"></div>
+
+          <!-- Desktop Table for Dash Stock -->
+          <div class="hidden sm:block overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="border-b border-slate-200 text-slate-500 bg-slate-50">
@@ -269,15 +283,20 @@
         </div>
 
         <!-- Recent Sales Quick List -->
-        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
           <div class="flex items-center justify-between mb-3">
             <div>
               <h3 class="text-sm font-bold text-slate-900">최근 판매 완료 및 마진 내역</h3>
-              <p class="text-xs text-slate-500">기준 판매가 대비 할인액 및 실제 순수익 자동 반영</p>
+              <p class="text-xs text-slate-500">할인액 및 실제 순수익 자동 반영</p>
             </div>
-            <button id="btnDashViewAllSales" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">전체 보기 →</button>
+            <button id="btnDashViewAllSales" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 whitespace-nowrap">전체 보기 →</button>
           </div>
-          <div class="overflow-x-auto custom-scrollbar">
+
+          <!-- Mobile Cards for Dash Sales -->
+          <div id="dashSalesMobileList" class="block sm:hidden space-y-2.5"></div>
+
+          <!-- Desktop Table for Dash Sales -->
+          <div class="hidden sm:block overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="border-b border-slate-200 text-slate-500 bg-slate-50">
@@ -645,7 +664,7 @@
       <!-- Category & Supplier Breakdown in Settlement Period -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
-          <h3 class="text-sm font-bold text-slate-900 mb-3">품목 카테고리별 정산 요약표</h3>
+          <h3 class="text-sm font-bold text-slate-900 mb-3">제품별 정산 요약표</h3>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
@@ -1270,77 +1289,146 @@
       cashEl.textContent = (netCashflow >= 0 ? '+' : '') + formatKRW(netCashflow);
       cashEl.className = netCashflow >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold';
 
-      // 4. Quick Stock Table on Dashboard
+      // 4. Quick Stock on Dashboard (Table & Mobile Cards)
       const dashStockBody = document.getElementById('dashStockTableBody');
+      const dashStockMobile = document.getElementById('dashStockMobileList');
       const availableItems = appState.inventory.filter(i => Number(i.stockQty) > 0).slice(0, 5);
+
       if (availableItems.length === 0) {
-        dashStockBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">현재 판매 가능한 재고가 없습니다.</td></tr>`;
+        if (dashStockBody) dashStockBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">현재 판매 가능한 재고가 없습니다.</td></tr>`;
+        if (dashStockMobile) dashStockMobile.innerHTML = `<div class="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">현재 판매 가능한 재고가 없습니다.</div>`;
       } else {
-        dashStockBody.innerHTML = availableItems.map(item => {
-          const totalUnitCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
-          return `
-            <tr class="hover:bg-slate-50">
-              <td class="py-2.5 px-3">
-                <div class="font-semibold text-slate-800">${escapeHtml(item.modelName)}</div>
-                <div class="text-[11px] text-slate-400">${escapeHtml(item.category)} · ${escapeHtml(item.condition)}</div>
-              </td>
-              <td class="py-2.5 px-2 text-center">
-                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${item.stockQty <= 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${item.stockQty}대</span>
-              </td>
-              <td class="py-2.5 px-2 text-right text-slate-600">${formatKRW(totalUnitCost)}</td>
-              <td class="py-2.5 px-2 text-right font-semibold text-indigo-700">${formatKRW(item.targetPrice)}</td>
-              <td class="py-2.5 px-2 text-center">
-                <button type="button" data-sell-id="${item.id}" class="open-sell-modal-btn px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px]">판매처리</button>
-              </td>
-            </tr>
-          `;
-        }).join('');
+        if (dashStockBody) {
+          dashStockBody.innerHTML = availableItems.map(item => {
+            const totalUnitCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
+            return `
+              <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-3">
+                  <div class="font-semibold text-slate-800">${escapeHtml(item.modelName)}</div>
+                  <div class="text-[11px] text-slate-400">${escapeHtml(item.category)} · ${escapeHtml(item.condition)}</div>
+                </td>
+                <td class="py-2.5 px-2 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${item.stockQty <= 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${item.stockQty}대</span>
+                </td>
+                <td class="py-2.5 px-2 text-right text-slate-600">${formatKRW(totalUnitCost)}</td>
+                <td class="py-2.5 px-2 text-right font-semibold text-indigo-700">${formatKRW(item.targetPrice)}</td>
+                <td class="py-2.5 px-2 text-center">
+                  <button type="button" data-sell-id="${item.id}" class="open-sell-modal-btn px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px]">판매처리</button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        if (dashStockMobile) {
+          dashStockMobile.innerHTML = availableItems.map(item => {
+            const totalUnitCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
+            const expMargin = (Number(item.targetPrice) || 0) - totalUnitCost;
+            return `
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">${escapeHtml(item.category)}</span>
+                    <h4 class="text-xs font-bold text-slate-900 mt-1">${escapeHtml(item.modelName)}</h4>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${item.stockQty <= 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'} whitespace-nowrap">
+                    ${item.stockQty}대 남음
+                  </span>
+                </div>
+                <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-200">
+                  <span class="text-slate-500">원가 ${formatKRW(totalUnitCost)} → <strong class="text-indigo-700 font-bold">${formatKRW(item.targetPrice)}</strong></span>
+                  <button type="button" data-sell-id="${item.id}" class="open-sell-modal-btn px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm">판매처리</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
       }
 
-      // 5. Recent Sales Table on Dashboard
+      // 5. Recent Sales on Dashboard (Table & Mobile Cards)
       const dashSalesBody = document.getElementById('dashSalesTableBody');
+      const dashSalesMobile = document.getElementById('dashSalesMobileList');
       const recentSales = [...periodSales].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+
       if (recentSales.length === 0) {
-        dashSalesBody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-400">선택한 정산 기간 내 판매 내역이 없습니다.</td></tr>`;
+        if (dashSalesBody) dashSalesBody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-400">선택한 정산 기간 내 판매 내역이 없습니다.</td></tr>`;
+        if (dashSalesMobile) dashSalesMobile.innerHTML = `<div class="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">선택한 정산 기간 내 판매 내역이 없습니다.</div>`;
       } else {
-        dashSalesBody.innerHTML = recentSales.map(s => {
-          const q = Number(s.qty) || 1;
-          const totalTarget = (Number(s.unitTargetPrice) || 0) * q;
-          const totalActual = (Number(s.unitActualPrice) || 0) * q;
-          const totalDisc = (Number(s.unitDiscount) || 0) * q;
-          const profit = totalActual - ((Number(s.unitCostTotal) || 0) * q) - (Number(s.shippingFee) || 0);
-          const mRate = totalActual > 0 ? ((profit / totalActual) * 100).toFixed(1) : '0.0';
-          return `
-            <tr class="hover:bg-slate-50">
-              <td class="py-2.5 px-3">
-                <div class="font-semibold text-slate-800">${escapeHtml(s.modelName)} <span class="text-slate-400 font-normal">(${q}대)</span></div>
-                <div class="text-[11px] text-slate-400">${s.date} · ${escapeHtml(s.channel)}</div>
-              </td>
-              <td class="py-2.5 px-2 text-right">
-                <div class="font-bold text-slate-900">${formatKRW(totalActual)}</div>
-                ${totalDisc > 0 ? `<div class="text-[10px] text-rose-600">기준가 ${formatKRW(totalTarget)} (-${formatKRW(totalDisc)} 할인)</div>` : `<div class="text-[10px] text-slate-400">정가 판매</div>`}
-              </td>
-              <td class="py-2.5 px-2 text-right">
-                <div class="font-bold text-emerald-700">+${formatKRW(profit)}</div>
-                <div class="text-[10px] font-semibold text-indigo-600">마진 ${mRate}%</div>
-              </td>
-            </tr>
-          `;
-        }).join('');
+        if (dashSalesBody) {
+          dashSalesBody.innerHTML = recentSales.map(s => {
+            const q = Number(s.qty) || 1;
+            const totalTarget = (Number(s.unitTargetPrice) || 0) * q;
+            const totalActual = (Number(s.unitActualPrice) || 0) * q;
+            const totalDisc = (Number(s.unitDiscount) || 0) * q;
+            const profit = totalActual - ((Number(s.unitCostTotal) || 0) * q) - (Number(s.shippingFee) || 0);
+            const mRate = totalActual > 0 ? ((profit / totalActual) * 100).toFixed(1) : '0.0';
+            return `
+              <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-3">
+                  <div class="font-semibold text-slate-800">${escapeHtml(s.modelName)} <span class="text-slate-400 font-normal">(${q}대)</span></div>
+                  <div class="text-[11px] text-slate-400">${s.date} · ${escapeHtml(s.channel)}</div>
+                </td>
+                <td class="py-2.5 px-2 text-right">
+                  <div class="font-bold text-slate-900">${formatKRW(totalActual)}</div>
+                  ${totalDisc > 0 ? `<div class="text-[10px] text-rose-600">기준가 ${formatKRW(totalTarget)} (-${formatKRW(totalDisc)} 할인)</div>` : `<div class="text-[10px] text-slate-400">정가 판매</div>`}
+                </td>
+                <td class="py-2.5 px-2 text-right">
+                  <div class="font-bold text-emerald-700">+${formatKRW(profit)}</div>
+                  <div class="text-[10px] font-semibold text-indigo-600">마진 ${mRate}%</div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        if (dashSalesMobile) {
+          dashSalesMobile.innerHTML = recentSales.map(s => {
+            const q = Number(s.qty) || 1;
+            const totalTarget = (Number(s.unitTargetPrice) || 0) * q;
+            const totalActual = (Number(s.unitActualPrice) || 0) * q;
+            const totalDisc = (Number(s.unitDiscount) || 0) * q;
+            const profit = totalActual - ((Number(s.unitCostTotal) || 0) * q) - (Number(s.shippingFee) || 0);
+            const mRate = totalActual > 0 ? ((profit / totalActual) * 100).toFixed(1) : '0.0';
+            return `
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-slate-900 truncate max-w-[200px]">${escapeHtml(s.modelName)}</span>
+                  <span class="text-[11px] text-slate-500">${s.date}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-200">
+                  <div>
+                    <span class="font-bold text-slate-900">${formatKRW(totalActual)}</span>
+                    ${totalDisc > 0 ? `<span class="text-[10px] text-rose-600 ml-1">(-${formatKRW(totalDisc)})</span>` : ''}
+                  </div>
+                  <div class="text-right">
+                    <span class="font-bold text-emerald-700">+${formatKRW(profit)}</span>
+                    <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1 py-0.5 rounded">(${mRate}%)</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
       }
 
       updateCharts(periodSales);
     }
 
     function updateCharts(periodSales) {
-      const categories = ['빔프로젝터', '노트북', '데스크탑 PC', '모니터/주변기기'];
+      // Collect actual categories dynamically from existing inventory and sales
+      const catSet = new Set();
+      appState.inventory.forEach(i => { if (i.category) catSet.add(i.category); });
+      periodSales.forEach(s => { if (s.category) catSet.add(s.category); });
+      let categories = Array.from(catSet);
+      if (categories.length === 0) categories = ['제품 전체'];
+
       const revData = [];
       const costData = [];
       const profitData = [];
       const stockValData = [];
 
       categories.forEach(cat => {
-        const catSales = periodSales.filter(s => s.category === cat);
+        const catSales = periodSales.filter(s => s.category === cat || (categories.length === 1 && categories[0] === '제품 전체'));
         let r = 0, c = 0, f = 0;
         catSales.forEach(s => {
           const q = Number(s.qty) || 1;
@@ -1352,13 +1440,15 @@
         costData.push(c + f);
         profitData.push(r - c - f);
 
-        const catStock = appState.inventory.filter(i => i.category === cat);
+        const catStock = appState.inventory.filter(i => i.category === cat || (categories.length === 1 && categories[0] === '제품 전체'));
         let sv = 0;
         catStock.forEach(i => {
           sv += (Number(i.stockQty) || 0) * ((Number(i.unitCost) || 0) + (Number(i.extraCost) || 0));
         });
         stockValData.push(sv);
       });
+
+      const palette = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
 
       const ctx1 = document.getElementById('chartCategoryPerformance').getContext('2d');
       if (chartCategory) chartCategory.destroy();
@@ -1376,9 +1466,12 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'top', labels: { font: { size: 11 } } }
+            legend: { position: 'top', labels: { font: { size: 11, family: "'Noto Sans KR', sans-serif" } } }
           },
           scales: {
+            x: {
+              ticks: { font: { size: 11, family: "'Noto Sans KR', sans-serif" } }
+            },
             y: {
               beginAtZero: true,
               ticks: {
@@ -1397,7 +1490,7 @@
           labels: categories,
           datasets: [{
             data: stockValData,
-            backgroundColor: ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b'],
+            backgroundColor: palette.slice(0, categories.length),
             borderWidth: 2
           }]
         },
@@ -1405,7 +1498,7 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'bottom', labels: { font: { size: 11 } } }
+            legend: { position: 'bottom', labels: { font: { size: 11, family: "'Noto Sans KR', sans-serif" } } }
           }
         }
       });
@@ -1660,11 +1753,15 @@
       document.getElementById('settleExistingRegVal').textContent = formatKRW(existingRegVal);
       document.getElementById('settleNetCashflow').textContent = (netCashflow >= 0 ? '+' : '') + formatKRW(netCashflow);
 
-      // Category Settlement Table
-      const categories = ['빔프로젝터', '노트북', '데스크탑 PC', '모니터/주변기기'];
+      // Category Settlement Table (Dynamically loaded)
+      const catSet = new Set();
+      periodSales.forEach(s => { if (s.category) catSet.add(s.category); });
+      let categories = Array.from(catSet);
+      if (categories.length === 0) categories = ['제품 전체'];
+
       const catBody = document.getElementById('settleCategoryTableBody');
       catBody.innerHTML = categories.map(cat => {
-        const list = periodSales.filter(s => s.category === cat);
+        const list = periodSales.filter(s => s.category === cat || (categories.length === 1 && categories[0] === '제품 전체'));
         let qSum = 0, revSum = 0, discSum = 0, profSum = 0;
         list.forEach(s => {
           const q = Number(s.qty) || 1;
@@ -1765,6 +1862,7 @@
       const target = document.getElementById(`tab-${tabName}`);
       if (target) target.classList.remove('hidden');
 
+      // Top Tabs
       document.querySelectorAll('.nav-tab').forEach(btn => {
         if (btn.getAttribute('data-tab') === tabName) {
           btn.classList.add('tab-active');
@@ -1774,6 +1872,17 @@
           btn.classList.add('text-slate-600', 'hover:bg-slate-200/70');
         }
       });
+
+      // Mobile Bottom Dock
+      document.querySelectorAll('.mobile-nav-dock-btn').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabName) {
+          btn.className = 'mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-bold text-indigo-600 bg-indigo-50/60';
+        } else {
+          btn.className = 'mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-slate-500';
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // ==================== SELL MODAL LOGIC ====================
@@ -1846,8 +1955,8 @@
       document.getElementById('recDate').value = '2026-11-11';
       setQuickPeriod('this_month');
 
-      // Nav tabs
-      document.querySelectorAll('.nav-tab').forEach(btn => {
+      // Nav tabs (Top & Bottom Dock)
+      document.querySelectorAll('.nav-tab, .mobile-nav-dock-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
       });
 
@@ -2291,5 +2400,30 @@
       });
     });
   </script>
+
+  <!-- Mobile Bottom Floating Navigation Bar (Thumb Friendly) -->
+  <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1.5 flex items-center justify-around shadow-lg">
+    <button data-tab="dashboard" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-bold text-indigo-600">
+      <span class="text-base">📊</span>
+      <span>대시보드</span>
+    </button>
+    <button data-tab="inventory" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-slate-500">
+      <span class="text-base">📦</span>
+      <span>재고목록</span>
+    </button>
+    <button data-tab="receive" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-slate-500">
+      <span class="text-base">📥</span>
+      <span>물품등록</span>
+    </button>
+    <button data-tab="sales" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-slate-500">
+      <span class="text-base">💰</span>
+      <span>판매내역</span>
+    </button>
+    <button data-tab="settlement" class="mobile-nav-dock-btn flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold text-slate-500">
+      <span class="text-base">📅</span>
+      <span>정산</span>
+    </button>
+  </div>
+
 </body>
 </html>
