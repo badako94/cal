@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -661,11 +662,11 @@
             <p class="text-xs text-slate-500">정산 기준일(예: 매월 1일~말일, 25일~익월 24일, 특정 주간 등)을 자유롭게 지정하여 정산할 수 있습니다.</p>
           </div>
           <!-- Quick Month / Cycle Buttons -->
-          <div class="flex flex-wrap items-center gap-1.5">
-            <button type="button" data-settle-range="2026-11" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100">2026년 11월 (1일~말일)</button>
-            <button type="button" data-settle-range="2026-10" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100">2026년 10월 (1일~말일)</button>
-            <button type="button" data-settle-range="cycle25_nov" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100">10/25 ~ 11/24 (25일 정산주기)</button>
-            <button type="button" data-settle-range="all" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100">전체 누적 정산</button>
+          <div class="flex flex-wrap items-center gap-1.5" id="settleQuickBtnGroup">
+            <button type="button" data-settle-range="2026-11" class="settle-quick-btn text-xs font-semibold px-3 py-1.5 rounded-lg border border-indigo-500 bg-indigo-50 text-indigo-700 transition">2026년 11월 (1일~말일)</button>
+            <button type="button" data-settle-range="2026-10" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition">2026년 10월 (1일~말일)</button>
+            <button type="button" data-settle-range="cycle25_nov" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition">10/25 ~ 11/24 (25일 정산주기)</button>
+            <button type="button" data-settle-range="all" class="settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition">전체 누적 정산</button>
           </div>
         </div>
 
@@ -1253,6 +1254,18 @@
       updateReceiveSimulator();
     }
 
+    function updateSettleBtnHighlight(activeRange) {
+      document.querySelectorAll('.settle-quick-btn').forEach(btn => {
+        if (!btn || typeof btn.getAttribute !== 'function') return;
+        const r = btn.getAttribute('data-settle-range');
+        if (r === activeRange) {
+          btn.className = 'settle-quick-btn text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-indigo-600 bg-indigo-50 text-indigo-700 shadow-xs transition';
+        } else {
+          btn.className = 'settle-quick-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition';
+        }
+      });
+    }
+
     // ==================== DATE PERIOD LOGIC ====================
     function setQuickPeriod(mode) {
       const startInput = document.getElementById('globalStartDate');
@@ -1270,26 +1283,33 @@
       if (mode === 'this_month') {
         startInput.value = '2026-11-01';
         endInput.value = '2026-11-30';
+        updateSettleBtnHighlight('2026-11');
       } else if (mode === 'last_month') {
         startInput.value = '2026-10-01';
         endInput.value = '2026-10-31';
+        updateSettleBtnHighlight('2026-10');
       } else if (mode === 'cycle_25') {
         startInput.value = '2026-10-25';
         endInput.value = '2026-11-24';
+        updateSettleBtnHighlight('cycle25_nov');
       } else if (mode === 'cycle_15') {
         startInput.value = '2026-10-15';
         endInput.value = '2026-11-14';
+        updateSettleBtnHighlight('');
       } else if (mode === 'last_30') {
         const s = new Date(refToday);
         s.setDate(s.getDate() - 30);
         startInput.value = fmt(s);
         endInput.value = '2026-11-30';
+        updateSettleBtnHighlight('');
       } else if (mode === 'this_year') {
         startInput.value = '2026-01-01';
         endInput.value = '2026-12-31';
+        updateSettleBtnHighlight('');
       } else if (mode === 'all_time') {
         startInput.value = '2020-01-01';
         endInput.value = '2030-12-31';
+        updateSettleBtnHighlight('all');
       }
       renderAll();
     }
@@ -2079,26 +2099,31 @@
         renderAll();
       });
 
-      // Settlement Quick Buttons
+      // Settlement Quick Buttons (With Visual Button Active Highlight Sync)
       document.querySelectorAll('.settle-quick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const r = btn.getAttribute('data-settle-range');
           const sInput = document.getElementById('globalStartDate');
           const eInput = document.getElementById('globalEndDate');
-          document.getElementById('quickPeriodSelect').value = 'custom';
+          const quickSel = document.getElementById('quickPeriodSelect');
           if (r === '2026-11') {
             sInput.value = '2026-11-01';
             eInput.value = '2026-11-30';
+            if (quickSel) quickSel.value = 'this_month';
           } else if (r === '2026-10') {
             sInput.value = '2026-10-01';
             eInput.value = '2026-10-31';
+            if (quickSel) quickSel.value = 'last_month';
           } else if (r === 'cycle25_nov') {
             sInput.value = '2026-10-25';
             eInput.value = '2026-11-24';
+            if (quickSel) quickSel.value = 'cycle_25';
           } else if (r === 'all') {
             sInput.value = '2020-01-01';
             eInput.value = '2030-12-31';
+            if (quickSel) quickSel.value = 'all_time';
           }
+          updateSettleBtnHighlight(r);
           renderAll();
           showToast('정산 조회 기간이 변경되었습니다.');
         });
