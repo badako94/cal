@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -484,22 +485,64 @@
                 </div>
               </div>
 
+              <!-- Base Price Fields -->
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div class="col-span-1">
                   <label class="block text-xs font-semibold text-slate-700 mb-1">입고 수량(대) *</label>
                   <input type="number" id="recQty" min="1" value="1" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-bold text-slate-800">
                 </div>
                 <div class="col-span-1">
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 매입가(원) *</label>
-                  <input type="number" id="recUnitCost" min="0" step="1000" placeholder="" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-bold text-slate-900">
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 본체 매입가(원) *</label>
+                  <input type="number" id="recUnitCost" min="0" step="1000" placeholder="0" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-bold text-slate-900">
                 </div>
                 <div class="col-span-1">
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">부대원가(원)</label>
-                  <input type="number" id="recExtraCost" min="0" step="1000" value="0" placeholder="" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-700">
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 부대원가 합계</label>
+                  <input type="number" id="recExtraCost" min="0" step="500" value="0" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-slate-100 font-bold text-slate-800" readonly>
                 </div>
                 <div class="col-span-1">
-                  <label class="block text-xs font-bold text-indigo-700 mb-1">기준 판매가(원) *</label>
-                  <input type="number" id="recTargetPrice" min="0" step="1000" placeholder="" required class="w-full text-xs border-2 border-indigo-500 rounded-lg px-3 py-2 bg-white font-bold text-indigo-950">
+                  <label class="block text-xs font-bold text-indigo-700 mb-1">1대당 기준 판매가(원) *</label>
+                  <input type="number" id="recTargetPrice" min="0" step="1000" placeholder="0" required class="w-full text-xs border-2 border-indigo-500 rounded-lg px-3 py-2 bg-white font-bold text-indigo-950">
+                </div>
+              </div>
+
+              <!-- Product Refurbishing & Accessories Cost Calculator (Customizable & Mobile-Optimized) -->
+              <div class="p-3 sm:p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs space-y-2.5">
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold text-slate-800">🔧 정비비 및 구성품 비용</span>
+                    <span id="extraCostSelectedBadge" class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">선택합계 0원</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button type="button" id="btnToggleAllExtra" class="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition">전체선택/해제</button>
+                    <button type="button" id="btnOpenAddPreset" class="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition flex items-center gap-0.5">
+                      <span>+</span><span>항목추가</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Inline Add New Preset Form (Hidden by default, clean mobile toggle) -->
+                <div id="newPresetFormWrap" class="hidden p-2.5 bg-indigo-50/60 border border-indigo-200 rounded-lg space-y-2 text-xs">
+                  <div class="font-bold text-indigo-950 text-[11px]">새 정비·구성품 항목 등록 (저장해두고 계속 사용)</div>
+                  <div class="flex flex-col sm:flex-row gap-1.5">
+                    <input type="text" id="newPresetName" placeholder="항목명 (예: 램프교체, 삼각대, 가방, 써멀재도포)" class="flex-1 text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-white">
+                    <div class="flex items-center gap-1">
+                      <input type="number" id="newPresetCost" min="0" step="500" placeholder="비용(원)" class="w-24 text-xs border border-slate-300 rounded px-2 py-1.5 bg-white font-bold">
+                      <button type="button" id="btnSaveNewPreset" class="text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white whitespace-nowrap">저장</button>
+                      <button type="button" id="btnCancelNewPreset" class="text-xs font-medium px-2 py-1.5 rounded bg-white border border-slate-300 text-slate-600">취소</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dynamic Preset Checkbox Grid (Mobile 1~2 cols, responsive) -->
+                <div id="extraPresetsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1.5 text-xs"></div>
+
+                <!-- Optional Manual Extra Cost Input -->
+                <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+                  <span class="text-slate-500 text-[11px]">일회성 추가비용:</span>
+                  <div class="flex items-center gap-1">
+                    <input type="number" id="recCustomExtraCost" min="0" step="500" value="0" placeholder="0" class="w-20 text-right text-xs border border-slate-300 rounded px-2 py-0.5 bg-white font-bold">
+                    <span class="text-slate-500 text-[11px]">원</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -944,6 +987,12 @@
 
     function getDefaultData() {
       return {
+        extraPresets: [
+          { id: 'ext-1', name: '정비·클리닝 (접점/먼지/스티커)', cost: 3000, checked: true },
+          { id: 'ext-2', name: '빔 만능 리모컨', cost: 3000, checked: true },
+          { id: 'ext-3', name: '전원선 (AC 케이블)', cost: 2000, checked: true },
+          { id: 'ext-4', name: '고속 HDMI 케이블', cost: 3000, checked: true }
+        ],
         suppliers: [
           { id: 'sup-1', name: '용산 프로젝터월드 도매', specialty: '엡손/벤큐 빔프로젝터', contact: '02-712-0001 / 김실장' },
           { id: 'sup-2', name: '강변 테크노 노트북총판', specialty: 'LG그램/갤럭시북 리퍼·중고', contact: '02-3424-0088 / 박팀장' },
@@ -1118,18 +1167,24 @@
     let chartComposition = null;
 
     function loadState() {
+      const def = getDefaultData();
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && Array.isArray(parsed.inventory) && Array.isArray(parsed.sales)) {
-            return parsed;
+          if (parsed && typeof parsed === 'object') {
+            return {
+              inventory: Array.isArray(parsed.inventory) ? parsed.inventory : def.inventory,
+              sales: Array.isArray(parsed.sales) ? parsed.sales : def.sales,
+              suppliers: Array.isArray(parsed.suppliers) && parsed.suppliers.length > 0 ? parsed.suppliers : def.suppliers,
+              extraPresets: Array.isArray(parsed.extraPresets) && parsed.extraPresets.length > 0 ? parsed.extraPresets : def.extraPresets
+            };
           }
         }
       } catch (e) {
         console.warn('Storage read fallback:', e);
       }
-      return getDefaultData();
+      return def;
     }
 
     function saveState() {
@@ -1156,6 +1211,47 @@
         el.style.opacity = '0';
         setTimeout(() => el.remove(), 300);
       }, 2700);
+    }
+
+    // ==================== DYNAMIC EXTRA COST & REFURBISH PRESETS ====================
+    function renderExtraPresets() {
+      if (!appState.extraPresets || !Array.isArray(appState.extraPresets)) {
+        appState.extraPresets = getDefaultData().extraPresets;
+      }
+
+      const container = document.getElementById('extraPresetsList');
+      if (!container) return;
+
+      container.innerHTML = appState.extraPresets.map(p => `
+        <div class="flex items-center justify-between p-2 rounded-lg border border-slate-200 bg-slate-50/70 hover:border-indigo-300 transition gap-1.5">
+          <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer">
+            <input type="checkbox" class="extra-cost-chk rounded text-indigo-600 focus:ring-indigo-500" data-id="${p.id}" data-cost="${p.cost}" ${p.checked ? 'checked' : ''}>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-slate-800 truncate text-[11px] sm:text-xs">${escapeHtml(p.name)}</div>
+              <div class="text-[10px] text-indigo-700 font-bold">+${formatKRW(p.cost)}</div>
+            </div>
+          </label>
+          <button type="button" data-del-preset-id="${p.id}" class="del-preset-btn text-slate-300 hover:text-rose-500 p-1 text-[11px] transition" title="항목 삭제">✕</button>
+        </div>
+      `).join('');
+
+      calcExtraCostTotal();
+    }
+
+    function calcExtraCostTotal() {
+      let sum = 0;
+      document.querySelectorAll('.extra-cost-chk').forEach(chk => {
+        if (chk.checked) {
+          sum += Number(chk.getAttribute('data-cost')) || 0;
+        }
+      });
+      const customVal = Number(document.getElementById('recCustomExtraCost')?.value) || 0;
+      sum += customVal;
+      const extraCostInput = document.getElementById('recExtraCost');
+      if (extraCostInput) extraCostInput.value = sum;
+      const badge = document.getElementById('extraCostSelectedBadge');
+      if (badge) badge.textContent = `선택합계 ${formatKRW(sum)}`;
+      updateReceiveSimulator();
     }
 
     // ==================== DATE PERIOD LOGIC ====================
@@ -1221,6 +1317,7 @@
       renderDashboard(periodSales);
       renderInventoryTable();
       renderSupplierOptionsAndTable();
+      renderExtraPresets();
       renderSalesTable(periodSales);
       renderSettlementReport(periodSales);
       updateReceiveSimulator();
@@ -2094,6 +2191,104 @@
         });
       }
 
+      // (Presets functions moved to outer scope)
+
+      // Delegate extra cost checkbox changes
+      const presetContainer = document.getElementById('extraPresetsList');
+      if (presetContainer) {
+        presetContainer.addEventListener('change', (e) => {
+          if (e.target.classList.contains('extra-cost-chk')) {
+            const pid = e.target.getAttribute('data-id');
+            const found = (appState.extraPresets || []).find(p => p.id === pid);
+            if (found) found.checked = e.target.checked;
+            saveState();
+            calcExtraCostTotal();
+          }
+        });
+
+        presetContainer.addEventListener('click', (e) => {
+          const delBtn = e.target.closest('.del-preset-btn');
+          if (delBtn) {
+            const pid = delBtn.getAttribute('data-del-preset-id');
+            appState.extraPresets = (appState.extraPresets || []).filter(p => p.id !== pid);
+            saveState();
+            renderExtraPresets();
+            showToast('정비 항목이 삭제되었습니다.');
+          }
+        });
+      }
+
+      // Custom one-off extra input
+      const customExtraInput = document.getElementById('recCustomExtraCost');
+      if (customExtraInput) {
+        customExtraInput.addEventListener('input', calcExtraCostTotal);
+      }
+
+      // Toggle Add Preset Form
+      const btnOpenAddPreset = document.getElementById('btnOpenAddPreset');
+      const newPresetFormWrap = document.getElementById('newPresetFormWrap');
+      const btnCancelNewPreset = document.getElementById('btnCancelNewPreset');
+      const btnSaveNewPreset = document.getElementById('btnSaveNewPreset');
+
+      if (btnOpenAddPreset && newPresetFormWrap) {
+        btnOpenAddPreset.addEventListener('click', () => {
+          newPresetFormWrap.classList.toggle('hidden');
+          if (!newPresetFormWrap.classList.contains('hidden')) {
+            document.getElementById('newPresetName').focus();
+          }
+        });
+      }
+      if (btnCancelNewPreset && newPresetFormWrap) {
+        btnCancelNewPreset.addEventListener('click', () => {
+          newPresetFormWrap.classList.add('hidden');
+        });
+      }
+      if (btnSaveNewPreset) {
+        btnSaveNewPreset.addEventListener('click', () => {
+          const name = (document.getElementById('newPresetName').value || '').trim();
+          const cost = Number(document.getElementById('newPresetCost').value) || 0;
+          if (!name) {
+            showToast('항목명을 입력해주세요.', 'error');
+            return;
+          }
+          if (cost <= 0) {
+            showToast('비용을 0보다 큰 금액으로 입력해주세요.', 'error');
+            return;
+          }
+          if (!appState.extraPresets) appState.extraPresets = [];
+          appState.extraPresets.push({
+            id: 'ext-' + Date.now(),
+            name: name,
+            cost: cost,
+            checked: true
+          });
+          saveState();
+          document.getElementById('newPresetName').value = '';
+          document.getElementById('newPresetCost').value = '';
+          newPresetFormWrap.classList.add('hidden');
+          renderExtraPresets();
+          showToast(`'${name}' (${formatKRW(cost)}) 항목이 저장되었습니다!`);
+        });
+      }
+
+      // Toggle All Checkboxes
+      const btnToggleAllExtra = document.getElementById('btnToggleAllExtra');
+      if (btnToggleAllExtra) {
+        btnToggleAllExtra.addEventListener('click', () => {
+          const chks = document.querySelectorAll('.extra-cost-chk');
+          const allChecked = Array.from(chks).every(c => c.checked);
+          chks.forEach(c => {
+            c.checked = !allChecked;
+            const pid = c.getAttribute('data-id');
+            const found = (appState.extraPresets || []).find(p => p.id === pid);
+            if (found) found.checked = !allChecked;
+          });
+          saveState();
+          calcExtraCostTotal();
+          showToast(allChecked ? '모든 정비·구성품 선택이 해제되었습니다.' : '모든 정비·구성품이 선택되었습니다.');
+        });
+      }
+
       // Receive Simulator Live Update
       ['recQty', 'recUnitCost', 'recExtraCost', 'recTargetPrice'].forEach(id => {
         document.getElementById(id).addEventListener('input', updateReceiveSimulator);
@@ -2137,6 +2332,8 @@
         document.getElementById('recDate').value = '2026-11-11';
         document.getElementById('recQty').value = 1;
         document.getElementById('recExtraCost').value = 0;
+        document.getElementById('recCustomExtraCost').value = 0;
+        document.querySelectorAll('.extra-cost-chk').forEach(c => c.checked = false);
         updateReceiveSimulator();
         showToast('재고 장부에 성공적으로 등록되었습니다!');
         switchTab('inventory');
