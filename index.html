@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,7 +12,7 @@
   <meta name="theme-color" content="#4f46e5">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%234f46e5'/><text x='50' y='63' font-size='42' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'>GS</text></svg>">
   <link rel="manifest" href="data:application/manifest+json;utf-8,%7B%22name%22%3A%22%EA%B8%B0%EC%96%B4%EC%8A%A4%ED%86%A1%20Pro%20-%20%EC%9E%AC%EA%B3%A0%EC%A0%95%EC%82%B0%22%2C%22short_name%22%3A%22%EA%B8%B0%EC%96%B4%EC%8A%A4%ED%86%A1%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%3E%3Crect%20width%3D'100'%20height%3D'100'%20rx%3D'22'%20fill%3D'%234f46e5'%2F%3E%3Ctext%20x%3D'50'%20y%3D'63'%20font-size%3D'42'%20font-family%3D'sans-serif'%20font-weight%3D'bold'%20fill%3D'white'%20text-anchor%3D'middle'%3EGS%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
-  <title>기어스톡Pro - 제품 재고 및 수익 정산 시스템</title>
+  <title>기어스톡 Pro - 빔프로젝터·PC·노트북 재고 및 수익 정산 시스템</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,7 +63,7 @@
             <h1 class="text-lg font-bold text-slate-900 tracking-tight">기어스톡 Pro</h1>
             <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">IT 기기 셀러 ERP</span>
           </div>
-          <p class="text-xs text-slate-500">제품 매입/재고/할인판매/월별 정산</p>
+          <p class="text-xs text-slate-500">빔프로젝터 · 데스크탑 PC · 노트북 매입/재고/할인판매/월별 정산</p>
         </div>
       </div>
 
@@ -139,7 +140,7 @@
             <span class="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/30 border border-indigo-400/40 rounded-full text-indigo-200">실시간 수익 브리핑</span>
             <span id="dashPeriodLabel" class="text-xs text-slate-300 font-medium"></span>
           </div>
-          <h2 class="text-lg sm:text-xl font-bold mt-1">사업 현황 한눈에 보기</h2>
+          <h2 class="text-lg sm:text-xl font-bold mt-1">빔프로젝터 · 컴퓨터 · 노트북 부업 현황 한눈에 보기</h2>
           <p class="text-xs text-slate-300 mt-0.5">상단 달력에서 정산 시작일과 종료일을 바꾸면 모든 수익·마진 지표가 즉시 재계산됩니다.</p>
         </div>
         <div class="flex items-center gap-2">
@@ -343,8 +344,12 @@
           </div>
         </div>
 
-        <!-- Inventory Table -->
-        <div class="overflow-x-auto custom-scrollbar border border-slate-200 rounded-xl">
+        <!-- Mobile Responsive Inventory View (Cards on Mobile, Table on Desktop) -->
+        <!-- Mobile Card List View (block on mobile, hidden on md+) -->
+        <div id="inventoryMobileList" class="block md:hidden space-y-3"></div>
+
+        <!-- Desktop Table View (hidden on mobile, block on md+) -->
+        <div class="hidden md:block overflow-x-auto custom-scrollbar border border-slate-200 rounded-xl">
           <table class="w-full text-left border-collapse text-xs">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
@@ -353,7 +358,7 @@
                 <th class="py-3 px-3 font-semibold">카테고리 / 모델명 / 사양</th>
                 <th class="py-3 px-2 font-semibold text-center">상태등급</th>
                 <th class="py-3 px-2 font-semibold text-center">잔여 / 초기</th>
-                <th class="py-3 px-3 font-semibold text-right">단위 매입가<br><span class="text-[10px] font-normal text-slate-400">(부대비 포함 원가)</span></th>
+                <th class="py-3 px-3 font-semibold text-right">단위 매입가<br><span class="text-[10px] font-normal text-slate-400">(원가)</span></th>
                 <th class="py-3 px-3 font-semibold text-right">기준 판매가</th>
                 <th class="py-3 px-3 font-semibold text-right">예상 마진<br><span class="text-[10px] font-normal text-slate-400">(1대 기준)</span></th>
                 <th class="py-3 px-3 font-semibold text-center">관리 / 판매처리</th>
@@ -410,14 +415,18 @@
                   <option value="노트북">노트북</option>
                   <option value="데스크탑 PC">데스크탑 PC</option>
                   <option value="모니터/주변기기">모니터/주변기기</option>
+                  <option value="기타">기타 (직접입력)</option>
                 </select>
+                <div id="customCategoryWrap" class="hidden mt-2">
+                  <input type="text" id="recCategoryCustom" placeholder="카테고리를 직접 입력하세요" class="w-full text-xs border border-indigo-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-indigo-50/40">
+                </div>
               </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div class="sm:col-span-2">
                 <label class="block text-xs font-semibold text-slate-700 mb-1">상품 / 모델명 *</label>
-                <input type="text" id="recModelName" required placeholder="예: 엡손 EB-FH52 풀HD 빔프로젝터 / LG 그램 16인치 i5" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="recModelName" required placeholder="" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">상품 상태 등급 *</label>
@@ -434,42 +443,45 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">세부 스펙 / 구성품 메모</label>
-                <input type="text" id="recSpecs" placeholder="예: 램프 120시간, 리모컨/가방 포함 OR i5-1240P / 16GB / SSD 512GB" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="recSpecs" placeholder="" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">시리얼 / 자체 관리코드 (비워두면 자동생성)</label>
-                <input type="text" id="recSku" placeholder="예: PRJ-2026-019" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="recSku" placeholder="" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
             </div>
 
-            <!-- Pricing Section -->
-            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
-              <div class="flex items-center justify-between">
+            <!-- Pricing Section (Mobile-Optimized & Manual Margin Input) -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3.5">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <h3 class="text-xs font-bold text-slate-800">💲 매입가 및 기준 판매가 설정 (필수)</h3>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-[11px] text-slate-500">목표 마진율로 판매가 자동계산:</span>
-                  <button type="button" data-margin-Jump="15" class="margin-preset-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-indigo-50 text-slate-700">+15%</button>
-                  <button type="button" data-margin-Jump="25" class="margin-preset-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-indigo-50 text-slate-700">+25%</button>
-                  <button type="button" data-margin-Jump="35" class="margin-preset-btn text-[11px] px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-indigo-50 text-slate-700">+35%</button>
+                <!-- Manual Margin Input (%) -->
+                <div class="flex items-center gap-1.5 bg-white border border-indigo-200 rounded-lg px-2.5 py-1 shadow-sm">
+                  <span class="text-[11px] font-bold text-indigo-700">목표 마진율 직접 입력:</span>
+                  <div class="flex items-center gap-1">
+                    <input type="number" id="manualMarginPct" min="0" max="1000" step="1" placeholder="25" class="w-14 text-center text-xs font-bold text-indigo-900 border border-slate-300 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <span class="text-xs font-bold text-indigo-600">%</span>
+                    <button type="button" id="btnApplyManualMargin" class="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition ml-0.5">적용</button>
+                  </div>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">입고 수량 (대) *</label>
-                  <input type="number" id="recQty" min="1" value="1" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-semibold">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="col-span-1">
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">입고 수량(대) *</label>
+                  <input type="number" id="recQty" min="1" value="1" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-bold text-slate-800">
                 </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 매입가 (원) *</label>
-                  <input type="number" id="recUnitCost" min="0" step="1000" placeholder="예: 320000" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-semibold text-slate-900">
+                <div class="col-span-1">
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 매입가(원) *</label>
+                  <input type="number" id="recUnitCost" min="0" step="1000" placeholder="" required class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-bold text-slate-900">
                 </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1">1대당 수리/부대원가 (원)</label>
-                  <input type="number" id="recExtraCost" min="0" step="1000" value="0" placeholder="램프교체, SSD추가 등" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white">
+                <div class="col-span-1">
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">부대원가(원)</label>
+                  <input type="number" id="recExtraCost" min="0" step="1000" value="0" placeholder="" class="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-700">
                 </div>
-                <div>
-                  <label class="block text-xs font-semibold text-indigo-700 mb-1">1대당 기준 판매가 (원) *</label>
-                  <input type="number" id="recTargetPrice" min="0" step="1000" placeholder="예: 450000" required class="w-full text-xs border-2 border-indigo-400 rounded-lg px-3 py-2 bg-white font-bold text-indigo-900">
+                <div class="col-span-1">
+                  <label class="block text-xs font-bold text-indigo-700 mb-1">기준 판매가(원) *</label>
+                  <input type="number" id="recTargetPrice" min="0" step="1000" placeholder="" required class="w-full text-xs border-2 border-indigo-500 rounded-lg px-3 py-2 bg-white font-bold text-indigo-950">
                 </div>
               </div>
             </div>
@@ -516,33 +528,16 @@
             </div>
           </div>
 
-          <!-- Quick Fill Sample Product Templates -->
-          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
-            <h3 class="text-xs font-bold text-slate-800">⚡ 자주 취급하는 품목 빠른 자동입력</h3>
-            <p class="text-[11px] text-slate-500">클릭하면 입력 폼에 대표 스펙과 시세 예시가 자동으로 채워집니다.</p>
-            <div class="space-y-2">
-              <button type="button" data-Preset="projector" class="preset-fill-btn w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex items-center justify-between text-xs">
-                <div>
-                  <div class="font-semibold text-slate-800">📽️ 엡손 EB-FH52 무선 풀HD 빔프로젝터</div>
-                  <div class="text-[11px] text-slate-500">매입 380,000원 / 기준판매가 520,000원</div>
-                </div>
-                <span class="text-indigo-600 font-bold">채우기</span>
-              </button>
-              <button type="button" data-Preset="laptop" class="preset-fill-btn w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex items-center justify-between text-xs">
-                <div>
-                  <div class="font-semibold text-slate-800">💻 LG 그램 15인치 i5-12세대 16G/512G</div>
-                  <div class="text-[11px] text-slate-500">매입 580,000원 / 기준판매가 760,000원</div>
-                </div>
-                <span class="text-indigo-600 font-bold">채우기</span>
-              </button>
-              <button type="button" data-Preset="desktop" class="preset-fill-btn w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition flex items-center justify-between text-xs">
-                <div>
-                  <div class="font-semibold text-slate-800">🖥️ 게이밍 PC (라이젠 5600 + RTX 3060)</div>
-                  <div class="text-[11px] text-slate-500">매입 490,000원 / 기준판매가 650,000원</div>
-                </div>
-                <span class="text-indigo-600 font-bold">채우기</span>
-              </button>
-            </div>
+          <!-- Quick Tips Card -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-2.5">
+            <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <span>💡</span> 모바일 등록 & 정산 팁
+            </h3>
+            <ul class="text-[11px] text-slate-600 space-y-1.5 list-disc list-inside">
+              <li><strong>목표 마진율</strong>을 입력하고 '적용'을 누르면 1천원 단위로 판매가가 자동 계산됩니다.</li>
+              <li>도매처 물품은 <strong>'도매처 신규 매입'</strong>, 이미 집에 있던 물건은 <strong>'기존 보유 재고'</strong>로 등록하세요.</li>
+              <li>목록에 없는 품목은 <strong>'기타 (직접입력)'</strong>을 선택하여 자유롭게 카테고리를 지정할 수 있습니다.</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -1440,11 +1435,17 @@
       });
 
       const tbody = document.getElementById('inventoryTableBody');
+      const mobileList = document.getElementById('inventoryMobileList');
+
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">조건에 맞는 재고 내역이 없습니다.</td></tr>`;
+        if (mobileList) {
+          mobileList.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-200">조건에 맞는 재고 내역이 없습니다.</div>`;
+        }
         return;
       }
 
+      // Render Desktop Table
       tbody.innerHTML = filtered.map(item => {
         const unitTotalCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
         const target = Number(item.targetPrice) || 0;
@@ -1498,6 +1499,68 @@
           </tr>
         `;
       }).join('');
+
+      // Render Mobile Card List (Optimized for Smartphone)
+      if (mobileList) {
+        mobileList.innerHTML = filtered.map(item => {
+          const unitTotalCost = (Number(item.unitCost) || 0) + (Number(item.extraCost) || 0);
+          const target = Number(item.targetPrice) || 0;
+          const expMargin = target - unitTotalCost;
+          const expMarginRate = target > 0 ? ((expMargin / target) * 100).toFixed(1) : '0.0';
+          const isWholesale = item.sourceType === 'WHOLESALE';
+          const q = Number(item.stockQty) || 0;
+
+          return `
+            <div class="p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-3 ${q === 0 ? 'opacity-70 bg-slate-50' : ''}">
+              <!-- Card Header -->
+              <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-2.5">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isWholesale ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}">
+                      ${isWholesale ? '도매 매입' : '기존 재고'}
+                    </span>
+                    <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium">${escapeHtml(item.category)}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium">${escapeHtml(item.condition)}</span>
+                  </div>
+                  <h3 class="text-sm font-bold text-slate-900 mt-1">${escapeHtml(item.modelName)}</h3>
+                  <div class="text-[11px] text-slate-400 font-mono mt-0.5">${item.sku} · ${item.date}</div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <span class="px-2.5 py-1 rounded-full text-xs font-bold ${q === 0 ? 'bg-slate-200 text-slate-600' : q === 1 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                    재고 ${q}대
+                  </span>
+                  <div class="text-[10px] text-slate-400 mt-1">초기 ${item.initialQty}대</div>
+                </div>
+              </div>
+
+              <!-- Price & Margin Grid (2 columns) -->
+              <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-150">
+                <div>
+                  <span class="text-[11px] text-slate-500">단위 원가:</span>
+                  <div class="font-semibold text-slate-800">${formatKRW(unitTotalCost)}</div>
+                </div>
+                <div>
+                  <span class="text-[11px] text-indigo-700 font-semibold">기준 판매가:</span>
+                  <div class="font-bold text-indigo-900">${formatKRW(target)}</div>
+                </div>
+                <div class="col-span-2 pt-1 border-t border-slate-200 flex items-center justify-between">
+                  <span class="text-[11px] text-slate-500">1대당 예상 마진:</span>
+                  <span class="font-bold text-emerald-700">+${formatKRW(expMargin)} (${expMarginRate}%)</span>
+                </div>
+              </div>
+
+              ${item.specs ? `<div class="text-[11px] text-slate-500 bg-slate-50/50 p-1.5 rounded">${escapeHtml(item.specs)}</div>` : ''}
+
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-end gap-2 pt-1">
+                <button type="button" data-del-inv-id="${item.id}" class="del-inv-btn px-2.5 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-medium">삭제</button>
+                <button type="button" data-edit-id="${item.id}" class="open-edit-modal-btn px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold">수정</button>
+                ${q > 0 ? `<button type="button" data-sell-id="${item.id}" class="open-sell-modal-btn flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm text-center">판매처리 (할인적용)</button>` : `<span class="flex-1 py-1.5 text-center text-xs text-slate-400 font-bold bg-slate-100 rounded-lg">품절된 상품</span>`}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     // ==================== SALES HISTORY TABLE ====================
@@ -1875,64 +1938,69 @@
         recSupplier.value = '기존 보유재고 (자체보유)';
       });
 
-      // Margin Preset Calculator Buttons in Receive Form
-      document.querySelectorAll('.margin-preset-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const pct = Number(btn.getAttribute('data-margin-Jump')) || 20;
-          const cost = (Number(document.getElementById('recUnitCost').value) || 0) + (Number(document.getElementById('recExtraCost').value) || 0);
-          if (cost <= 0) {
-            showToast('먼저 1대당 매입가를 입력해주세요.', 'error');
-            return;
+      // Category '기타' Custom Input Toggle
+      const recCatSelect = document.getElementById('recCategory');
+      const customCatWrap = document.getElementById('customCategoryWrap');
+      const recCatCustomInput = document.getElementById('recCategoryCustom');
+      if (recCatSelect) {
+        recCatSelect.addEventListener('change', () => {
+          if (recCatSelect.value === '기타') {
+            customCatWrap.classList.remove('hidden');
+            recCatCustomInput.focus();
+          } else {
+            customCatWrap.classList.add('hidden');
           }
-          const suggested = Math.round((cost * (1 + pct / 100)) / 1000) * 1000;
-          document.getElementById('recTargetPrice').value = suggested;
-          updateReceiveSimulator();
         });
-      });
+      }
+
+      // Manual Margin Calculator (%)
+      function applyManualMargin() {
+        const pctInput = document.getElementById('manualMarginPct');
+        const pct = parseFloat(pctInput.value);
+        if (isNaN(pct) || pct < 0) {
+          showToast('목표 마진율(%)을 숫자로 입력해주세요.', 'error');
+          return;
+        }
+        const cost = (Number(document.getElementById('recUnitCost').value) || 0) + (Number(document.getElementById('recExtraCost').value) || 0);
+        if (cost <= 0) {
+          showToast('먼저 1대당 매입가를 입력해주세요.', 'error');
+          return;
+        }
+        const suggested = Math.round((cost * (1 + pct / 100)) / 1000) * 1000;
+        document.getElementById('recTargetPrice').value = suggested;
+        updateReceiveSimulator();
+        showToast('마진율 ' + pct + '%가 적용된 판매가가 계산되었습니다!');
+      }
+
+      const btnApplyMargin = document.getElementById('btnApplyManualMargin');
+      if (btnApplyMargin) {
+        btnApplyMargin.addEventListener('click', applyManualMargin);
+      }
+      const manualMarginInput = document.getElementById('manualMarginPct');
+      if (manualMarginInput) {
+        manualMarginInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            applyManualMargin();
+          }
+        });
+      }
 
       // Receive Simulator Live Update
       ['recQty', 'recUnitCost', 'recExtraCost', 'recTargetPrice'].forEach(id => {
         document.getElementById(id).addEventListener('input', updateReceiveSimulator);
       });
 
-      // Quick Product Preset Fill Buttons
-      document.querySelectorAll('.preset-fill-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const p = btn.getAttribute('data-Preset');
-          if (p === 'projector') {
-            document.getElementById('recCategory').value = '빔프로젝터';
-            document.getElementById('recModelName').value = '엡손 EB-FH52 무선 풀HD 빔프로젝터';
-            document.getElementById('recCondition').value = '중고 S급';
-            document.getElementById('recSpecs').value = '램프 100시간 미만, 가방/리모컨 포함';
-            document.getElementById('recUnitCost').value = 370000;
-            document.getElementById('recExtraCost').value = 10000;
-            document.getElementById('recTargetPrice').value = 520000;
-          } else if (p === 'laptop') {
-            document.getElementById('recCategory').value = '노트북';
-            document.getElementById('recModelName').value = 'LG 그램 15인치 i5-12세대 16GB/512GB';
-            document.getElementById('recCondition').value = '중고 S급';
-            document.getElementById('recSpecs').value = '스노우 화이트, 정품 충전기/파우치 포함';
-            document.getElementById('recUnitCost').value = 580000;
-            document.getElementById('recExtraCost').value = 0;
-            document.getElementById('recTargetPrice').value = 760000;
-          } else if (p === 'desktop') {
-            document.getElementById('recCategory').value = '데스크탑 PC';
-            document.getElementById('recModelName').value = '게이밍 데스크탑 (라이젠 5600 + RTX 3060 12G)';
-            document.getElementById('recCondition').value = '리퍼/전시';
-            document.getElementById('recSpecs').value = '16GB RAM, NVMe 512GB, 신품 강화유리 케이스';
-            document.getElementById('recUnitCost').value = 470000;
-            document.getElementById('recExtraCost').value = 20000;
-            document.getElementById('recTargetPrice').value = 650000;
-          }
-          updateReceiveSimulator();
-          showToast('예시 품목 정보가 입력되었습니다.');
-        });
-      });
+      // (Sample presets removed for clean entry)
 
       // Submit Receive Form
       document.getElementById('receiveForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        const cat = document.getElementById('recCategory').value;
+        let cat = document.getElementById('recCategory').value;
+        if (cat === '기타') {
+          const customVal = (document.getElementById('recCategoryCustom').value || '').trim();
+          cat = customVal || '기타';
+        }
         const prefix = cat === '빔프로젝터' ? 'PRJ' : cat === '노트북' ? 'LTP' : cat === '데스크탑 PC' ? 'PC' : 'ETC';
         const autoSku = `${prefix}-${String(Date.now()).slice(-5)}`;
         const qty = Number(document.getElementById('recQty').value) || 1;
@@ -2226,3 +2294,4 @@
   </script>
 </body>
 </html>
+```
